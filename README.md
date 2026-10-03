@@ -1,5 +1,8 @@
 # 読めない博物誌
 
+- 図鑑（ウェブ版）：https://yuuuuuuuuri.github.io/yomenai-hakubutsushi/
+- 生成ノートブックを Colab で開く：https://colab.research.google.com/github/yuuuuuuuuri/yomenai-hakubutsushi/blob/main/colab/01_generate_specimens.ipynb
+
 AIの潜在空間のなかで「既存のどの生きものにも似ない」ように探索された生きものを収めた図鑑。
 各標本には名前がある。名前は、語彙の空間におけるその生きものの座標から、ひとつの規則で書かれている。
 人間の言葉で書けるのは、それが「何でないか」だけである。
@@ -51,7 +54,7 @@ yomenai-hakubutsushi/
 - 応募画像と PDF の書き出し：`bash tools/export.sh`（Google Chrome を使う。引数で主役の標本番号を選べる）
   - `entry/out/` に 1:1・16:9（カバー／文字なし）・2:3 の 4 枚、`book/` に PDF と共有用画像ができる
   - 試作データのまま書き出したものは仮。本物のデータを `book/data/` に置いてから書き出し直す
-- 公開するのは `book/` フォルダ一式（`data/` と PDF を含む）。公開先が決まったら `index.html` の og:image を絶対 URL に直す
+- 公開されるのは `book/` フォルダ一式（`data/` と PDF を含む）。`main` に push すると GitHub Actions が GitHub Pages に公開する
 
 ## これから決めること
 
