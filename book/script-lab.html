@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>文字体系の検証</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond&family=Shippori+Mincho:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --paper: #f4efe4; --ink: #2b2520; --ink-soft: #6d6257; --rule: #c9bfae; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Shippori Mincho", serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 32px 16px 80px; }
+  h1 { font-weight: 600; font-size: 22px; letter-spacing: .2em; }
+  h2 { font-weight: 600; font-size: 16px; margin: 48px 0 6px; letter-spacing: .1em; }
+  p.note { font-size: 13px; color: var(--ink-soft); line-height: 1.9; margin: 0 0 16px; }
+  .row { display: flex; align-items: center; gap: 16px; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+  .row .k { width: 120px; flex: none; font-size: 12px; color: var(--ink-soft); font-family: "EB Garamond", serif; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 10px; }
+  .grid svg { width: 56px; height: 56px; }
+  .controls { display: flex; gap: 16px; align-items: center; font-size: 13px; margin-bottom: 12px; flex-wrap: wrap; }
+  input[type=range] { width: 260px; }
+  button { font: inherit; font-size: 13px; padding: 4px 12px; background: none; border: 1px solid var(--ink); color: var(--ink); cursor: pointer; }
+  a { color: var(--ink); }
+</style>
+</head>
+<body>
+<main>
+  <h1>文字体系の検証</h1>
+  <p class="note">座標から文字を書く規則が、作品の主張どおりに振る舞うかを確かめるページです。座標は乱数による仮のものです。<a href="index.html">図鑑に戻る</a></p>
+
+  <h2>一　字形見本</h2>
+  <p class="note">8 次元の座標をランダムに与えたときに現れる文字。ひとつの文字体系として統一感があるかを見る。</p>
+  <div class="controls"><button id="reroll">別の 96 字を見る</button></div>
+  <div class="grid" id="sampler"></div>
+
+  <h2>二　連続性：座標を動かすと、名前もなめらかに変わる</h2>
+  <p class="note">二体の標本 A と B の座標を直線で結び、その途中の地点の名前を書いた。急に別の字に切り替わらず、少しずつ形が移っていけば、規則は連続である。</p>
+  <div class="controls">
+    <label>位置 <input type="range" id="t" min="0" max="1" step="0.005" value="0"></label>
+    <span id="tval">0.00</span>
+  </div>
+  <div id="morph"></div>
+  <div id="interp"></div>
+
+  <h2>三　近縁：距離が離れるほど、名前は似なくなる</h2>
+  <p class="note">基準の標本に、だんだん大きな揺らぎを加えた。近い個体は字形を共有し、遠い個体ほど別の名前になる。</p>
+  <div id="family"></div>
+
+  <h2>四　名前の長さ：既知から遠いほど長い</h2>
+  <p class="note">既知の語（語彙の空間の上にある点）は種名 1 文字。未知の生きものは、既知からの遠さに応じて種名 2–5 文字。</p>
+  <div id="lengths"></div>
+</main>
+
+<script src="glyphs.js"></script>
+<script>
+(function () {
+  const G = window.Glyphs;
+  const rng = G.mulberry32(42);
+  const randn = (n, s = 1) => Array.from({ length: n }, () => G.gaussian(rng) * s);
+  const row = (k, svg) => `<div class="row"><div class="k">${k}</div>${svg}</div>`;
+
+  function sampler() {
+    document.getElementById('sampler').innerHTML = Array.from({ length: 96 }, () => {
+      const g = G.glyphFromChunk(randn(8));
+      return `<svg viewBox="0 0 56 56">${G.glyphSVG(g, 0, 0, 56, 'currentColor')}</svg>`;
+    }).join('');
+  }
+  document.getElementById('reroll').onclick = sampler;
+  sampler();
+
+  const A = randn(G.COORD_DIMS), B = randn(G.COORD_DIMS);
+  const lerp = (t) => A.map((a, i) => a * (1 - t) + B[i] * t);
+  const LEN = 4;
+  function morph() {
+    const t = +document.getElementById('t').value;
+    document.getElementById('tval').textContent = t.toFixed(2);
+    document.getElementById('morph').innerHTML = row(`t = ${t.toFixed(2)}`, G.nameSVG(G.nameFromCoords(lerp(t), LEN), { size: 72 }));
+  }
+  document.getElementById('t').oninput = morph;
+  morph();
+  document.getElementById('interp').innerHTML = Array.from({ length: 11 }, (_, i) => i / 10)
+    .map((t) => row(t === 0 ? 'A' : t === 1 ? 'B' : t.toFixed(1), G.nameSVG(G.nameFromCoords(lerp(t), LEN), { size: 36 })))
+    .join('');
+
+  const base = randn(G.COORD_DIMS);
+  document.getElementById('family').innerHTML = [0, 0.05, 0.15, 0.3, 0.6, 1.0, 2.0]
+    .map((s) => row(s === 0 ? '基準' : `揺らぎ ${s}`, G.nameSVG(G.nameFromCoords(base.map((v) => v + G.gaussian(rng) * s), 3), { size: 36 })))
+    .join('');
+
+  document.getElementById('lengths').innerHTML = [['既知の語', null], ['遠さ 0.0', 0], ['遠さ 0.4', 0.4], ['遠さ 0.7', 0.7], ['遠さ 1.0', 1]]
+    .map(([k, f]) => row(k, G.nameSVG(G.nameFromCoords(randn(G.COORD_DIMS), f === null ? 1 : G.speciesLengthFor(f)), { size: 36 })))
+    .join('');
+})();
+</script>
+</body>
+</html>

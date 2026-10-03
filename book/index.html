@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>読めない博物誌</title>
+<meta name="description" content="AIの潜在空間で「既存のどの生きものにも似ない」ように探索された生きものの図鑑。名前は、語彙空間における座標から規則で書かれた、読めない文字。">
+<meta property="og:type" content="book">
+<meta property="og:title" content="読めない博物誌 — An Unreadable Natural History">
+<meta property="og:description" content="AIの潜在空間で「既存のどの生きものにも似ない」ように探索された生きものの図鑑。この文字は読めない。けれど、読み方は存在する。">
+<!-- 公開先が決まったら、og:image を絶対 URL（https://…/cover_16x9.png）に書き換える -->
+<meta property="og:image" content="cover_16x9.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=Shippori+Mincho:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f4efe4;
+    --ink: #2b2520;
+    --ink-soft: #6d6257;
+    --rule: #b9ad9c;
+    --desk: #d8d2c6;
+    --page-w: 182mm;   /* B5 */
+    --page-h: 257mm;
+    --margin: 17mm;
+  }
+  @page { size: 182mm 257mm; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--desk);
+    color: var(--ink);
+    font-family: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .toolbar {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 16px; align-items: center; justify-content: center;
+    padding: 10px 16px; background: rgba(43, 37, 32, 0.92); color: var(--paper);
+    font-size: 13px;
+  }
+  .toolbar a { color: var(--paper); }
+  .toolbar .badge { background: #a3482f; padding: 2px 8px; border-radius: 3px; }
+  .toolbar .title { letter-spacing: .3em; }
+  @media (max-width: 640px) { .toolbar { gap: 10px; font-size: 12px; flex-wrap: wrap; } .toolbar .print-hint { display: none; } }
+  .book { display: flex; flex-direction: column; align-items: center; gap: 12mm; padding: 12mm 0 24mm; }
+  .page {
+    position: relative;
+    width: var(--page-w); height: var(--page-h);
+    padding: var(--margin);
+    background: var(--paper);
+    box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 8px 24px rgba(0,0,0,.12);
+    overflow: hidden;
+  }
+  @media print {
+    body { background: none; }
+    .toolbar { display: none; }
+    .book { display: block; padding: 0; zoom: 1 !important; }
+    .page { box-shadow: none; break-after: page; }
+  }
+  .folio {
+    position: absolute; bottom: 9mm; left: 0; right: 0; text-align: center;
+    font-family: "EB Garamond", serif; font-size: 9pt; color: var(--ink-soft);
+  }
+  .mock-stamp {
+    position: absolute; top: 7mm; right: 8mm; font-size: 7pt; letter-spacing: .1em;
+    color: #a3482f; border: 0.3mm solid #a3482f; padding: .6mm 1.6mm; opacity: .8;
+  }
+  svg { display: block; }
+
+  /* 表紙 */
+  .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .cover .book-name svg { width: auto; height: 22mm; margin: 0 auto; }
+  .cover h1 { font-weight: 600; font-size: 22pt; letter-spacing: .5em; margin: 22mm 0 4mm; padding-left: .5em; }
+  .cover .en { font-family: "EB Garamond", serif; font-style: italic; font-size: 11pt; color: var(--ink-soft); letter-spacing: .08em; }
+  .cover .note { position: absolute; bottom: 24mm; left: 0; right: 0; font-size: 8pt; color: var(--ink-soft); }
+
+  /* 序 */
+  .preface { display: flex; justify-content: center; }
+  .preface .vtext {
+    writing-mode: vertical-rl; font-size: 11pt; line-height: 2.1; letter-spacing: .06em;
+    height: 100%; padding-top: 18mm;
+  }
+  .preface .vtext h2 { font-size: 14pt; font-weight: 600; margin: 0 0 0 10mm; letter-spacing: .4em; }
+  .preface .vtext p { margin: 0 0 0 4mm; }
+  .tcy { text-combine-upright: all; }
+
+  /* 部扉 */
+  .chapter { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .chapter .genus svg { height: 30mm; width: auto; }
+  .chapter h2 { font-weight: 400; font-size: 14pt; letter-spacing: .4em; margin-top: 16mm; }
+  .chapter .caption { font-size: 8pt; color: var(--ink-soft); margin-top: 2mm; }
+
+  /* 標本頁 */
+  .specimen header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 0.25mm solid var(--rule); padding-bottom: 2mm;
+    font-size: 8pt; color: var(--ink-soft);
+  }
+  .specimen header .no { font-family: "EB Garamond", serif; font-size: 12pt; color: var(--ink); letter-spacing: .06em; }
+  .specimen .main { display: flex; gap: 7mm; margin-top: 7mm; }
+  .specimen .plate {
+    width: 116mm; height: 116mm; flex: none;
+    border: 0.25mm solid var(--rule); background: #efe8da;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-soft); font-size: 8pt; letter-spacing: .3em;
+  }
+  .specimen .plate img { width: 100%; height: 100%; object-fit: cover; display: block; mix-blend-mode: multiply; }
+  .specimen .name-v { flex: 1; display: flex; justify-content: center; }
+  .specimen .name-v svg { width: 13mm; height: auto; }
+  .specimen .sub-plates { display: flex; gap: 3mm; margin-top: 3mm; }
+  .specimen .sub-plates img { width: 36mm; height: 36mm; object-fit: cover; border: 0.25mm solid var(--rule); mix-blend-mode: multiply; }
+  .specimen .desc {
+    margin-top: 6mm; display: flex; flex-wrap: wrap; gap: 2.6mm 4.2mm; align-items: center;
+    padding-top: 4mm; border-top: 0.25mm solid var(--rule);
+  }
+  .specimen .desc svg { height: 4.6mm; width: auto; }
+  .specimen .desc .label, .specimen .readable .label {
+    font-size: 7pt; color: var(--ink-soft); letter-spacing: .3em; margin-right: 2mm;
+  }
+  .specimen .readable { margin-top: 6mm; font-size: 8.5pt; line-height: 1.9; }
+  .specimen .readable .neg { font-family: "EB Garamond", "Shippori Mincho", serif; }
+  .specimen .readable .meta { margin-top: 2mm; font-size: 7.5pt; color: var(--ink-soft); }
+  .specimen .parents { display: inline-flex; gap: 2mm; align-items: center; vertical-align: middle; }
+  .specimen .parents svg { height: 3.6mm; width: auto; }
+
+  /* 付録：手がかり */
+  .rosetta h2 { font-weight: 400; font-size: 13pt; letter-spacing: .4em; margin: 6mm 0 2mm; }
+  .rosetta .caption { font-size: 8pt; color: var(--ink-soft); margin-bottom: 8mm; line-height: 1.8; }
+  .rosetta table { width: 100%; border-collapse: collapse; }
+  .rosetta td { border-bottom: 0.25mm solid var(--rule); padding: 3.2mm 0; vertical-align: middle; }
+  .rosetta td.word { font-family: "EB Garamond", serif; font-size: 11pt; width: 40mm; }
+  .rosetta td svg { height: 7mm; width: auto; }
+
+  /* 奥付 */
+  .colophon { display: flex; flex-direction: column; justify-content: flex-end; }
+  .colophon dl { display: grid; grid-template-columns: 26mm 1fr; gap: 2mm 4mm; font-size: 8pt; line-height: 1.7; border-top: 0.25mm solid var(--rule); padding-top: 5mm; margin-bottom: 20mm; }
+  .colophon dt { color: var(--ink-soft); }
+  .colophon dd { margin: 0; }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <span id="data-state"></span>
+  <a href="script-lab.html">文字の規則</a>
+  <a href="yomenai-hakubutsushi.pdf" id="pdf-link" hidden>PDF</a>
+  <span class="print-hint">印刷：用紙 B5・余白なし・背景を印刷</span>
+</div>
+<main class="book" id="book"></main>
+
+<script src="glyphs.js"></script>
+<script src="data/specimens.js" onerror="this.remove()"></script>
+<script src="mock-data.js"></script>
+<script>
+(function () {
+  const G = window.Glyphs;
+  const D = window.HAKUBUTSUSHI;
+  const book = document.getElementById('book');
+  document.getElementById('data-state').innerHTML = D.mock
+    ? '<span class="badge">試作データで表示中</span> data/specimens.js を置くと本物に切り替わります'
+    : `<span class="title">読めない博物誌</span>　${D.specimens.length} 体の標本`;
+  // 公開版では同じ階層に PDF を置く。あればリンクを出す
+  fetch('yomenai-hakubutsushi.pdf', { method: 'HEAD' })
+    .then((r) => { if (r.ok) document.getElementById('pdf-link').hidden = false; })
+    .catch(() => {});
+
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const mean = (vs) => vs[0].map((_, i) => vs.reduce((s, v) => s + v[i], 0) / vs.length);
+  const pad3 = (n) => String(n).padStart(3, '0');
+  const byId = Object.fromEntries(D.specimens.map((s) => [s.id, s]));
+
+  // 既知の語は種名 1 文字、生き物は既知からの遠さに応じて 2–5 文字
+  const nameOf = (s) => G.nameFromCoords(s.coords, G.speciesLengthFor(s.farness));
+  const wordName = (w) => G.nameFromCoords(w.coords, 1);
+
+  let folio = 0;
+  function page(cls, html) {
+    folio++;
+    const el = document.createElement('section');
+    el.className = 'page ' + cls;
+    el.innerHTML = html + (D.mock ? '<div class="mock-stamp">試作データ</div>' : '')
+      + (cls === 'cover' ? '' : `<div class="folio">${folio}</div>`);
+    book.appendChild(el);
+  }
+
+  // 表紙：この本の名前は、収められた全標本の座標の重心から書かれる
+  const centroid = mean(D.specimens.map((s) => s.coords));
+  page('cover', `
+    <div class="book-name">${G.nameSVG(G.nameFromCoords(centroid, 3), { size: 60 })}</div>
+    <h1>読めない博物誌</h1>
+    <div class="en">An Unreadable Natural History</div>
+    <div class="note">表題の文字列は、本書に収めた ${D.specimens.length} 体の座標の重心を書き表したもの</div>`);
+
+  page('preface', `
+    <div class="vtext">
+      <h2>序</h2>
+      <p>ここに収めた生きものは、<span class="tcy">AI</span>の潜在空間のなかで、既存のどの生きものにも似ないように探された。</p>
+      <p>探索のたびに、<span class="tcy">AI</span>はそれを見て「これは何か」と答え、その答えから遠ざかるように、生きものは姿を変えた。</p>
+      <p>だから各頁に人間の言葉で書けるのは、それが何でないか、だけである。</p>
+      <p>一方で、彼らには名前がある。名前は、語彙の空間における彼らの座標から、ひとつの規則で書かれている。</p>
+      <p>似た生きものは似た名前を持ち、既知から遠い生きものほど、名前は長い。</p>
+      <p>この文字は読めない。けれど、読み方は存在する。</p>
+    </div>`);
+
+  for (const ch of D.chapters) {
+    const members = D.specimens.filter((s) => s.chapter === ch.key);
+    if (!members.length) continue;
+    const genusOnly = G.nameFromCoords(mean(members.map((s) => s.coords)), 1);
+    genusOnly.species = [];
+    page('chapter', `
+      <div class="genus">${G.nameSVG(genusOnly, { size: 60 })}</div>
+      <h2>${esc(ch.title)}</h2>
+      <div class="caption">この部の ${members.length} 体に共通する属名（座標の重心）</div>`);
+
+    for (const s of members) {
+      const [main, ...subs] = s.images || [];
+      const negs = s.negatives_ja || s.negatives || [];
+      const isJa = !!s.negatives_ja || negs.some((n) => /[^\x00-\x7f]/.test(n));
+      // 交配種は VLM に問われていないので、両親のどちらでもないことだけが書ける
+      const negText = !negs.length && s.parents
+        ? `No.${pad3(s.parents[0])} でも No.${pad3(s.parents[1])} でもない。`
+        : isJa
+          ? negs.map((n) => `${esc(n)}ではない。`).join('')
+          : negs.map((n) => `Not ${esc(n)}.`).join(' ');
+      const desc = (s.neighbors || []).map((w) => G.nameSVG(wordName(w), { size: 40, gap: 0.3 })).join('');
+      const parents = s.parents
+        ? `<div>両親　<span class="parents">No.${pad3(s.parents[0])} ${G.nameSVG(nameOf(byId[s.parents[0]]), { size: 40 })}</span>
+             ×　<span class="parents">No.${pad3(s.parents[1])} ${G.nameSVG(nameOf(byId[s.parents[1]]), { size: 40 })}</span></div>`
+        : '';
+      page('specimen', `
+        <header><span class="no">No. ${pad3(s.id)}</span><span>${esc(ch.title)}</span></header>
+        <div class="main">
+          <div>
+            <div class="plate">${main ? `<img src="data/${esc(main)}" alt="">` : '図　版'}</div>
+            ${subs.length ? `<div class="sub-plates">${subs.slice(0, 3).map((p) => `<img src="data/${esc(p)}" alt="">`).join('')}</div>` : ''}
+          </div>
+          <div class="name-v">${G.nameSVG(nameOf(s), { size: 60, vertical: true, gap: 0.45 })}</div>
+        </div>
+        <div class="desc"><span class="label">記載</span>${desc}</div>
+        <div class="readable">
+          <div><span class="label">これではないもの</span><span class="neg">${negText}</span></div>
+          ${parents}
+          <div class="meta">既知の語からの遠さ ${(s.outlierness ?? s.farness).toFixed(3)}${s.seed !== undefined ? `　／　seed ${s.seed}` : ''}</div>
+        </div>`);
+    }
+  }
+
+  page('rosetta', `
+    <h2>手がかり</h2>
+    <div class="caption">既知の語を、同じ規則で書き表したもの。既知の語は語彙の空間そのものの上にあるため、種名は一文字になる。<br>
+      本文「記載」の欄には、各標本にもっとも近い既知の語が、この文字で記されている。</div>
+    <table>${D.rosetta.map((w) => `<tr><td class="word">${esc(w.word)}</td><td>${G.nameSVG(wordName(w), { size: 40, gap: 0.3 })}</td></tr>`).join('')}</table>`);
+
+  // 画面幅が頁より狭いときは、頁ごと縮小して見せる
+  const PAGE_PX = (182 * 96) / 25.4; // B5 の幅（CSS px）
+  const fit = () => {
+    // スマホでは頁がはみ出すと innerWidth 自体が広がるので、レイアウト上の幅（clientWidth）を使う
+    const vw = Math.min(window.innerWidth, document.documentElement.clientWidth);
+    book.style.zoom = Math.min(1, (vw - 24) / PAGE_PX).toFixed(3);
+  };
+
+  page('colophon', `
+    <dl>
+      <dt>書名</dt><dd>読めない博物誌</dd>
+      <dt>標本</dt><dd>${D.specimens.length} 体</dd>
+      <dt>生成</dt><dd>ConceptLab（Richardson et al., 2023）／ ${esc(D.meta.model || '')}</dd>
+      <dt>文字</dt><dd>語彙の主成分座標 ${G.COORD_DIMS} 次元を、8 次元ずつ 1 文字に写す規則による</dd>
+      <dt>作成</dt><dd>${esc(D.meta.created || '')}</dd>
+    </dl>`);
+
+  fit();
+  window.addEventListener('resize', fit);
+})();
+</script>
+</body>
+</html>

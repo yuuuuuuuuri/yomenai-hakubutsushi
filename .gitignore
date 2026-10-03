@@ -1,0 +1,6 @@
+.DS_Store
+__pycache__/
+# 応募画像は応募フォームに直接アップロードするので、公開しない
+entry/out/
+# 応募の下書きは手元にだけ置く
+entry/application.md
