@@ -4,3 +4,4 @@ __pycache__/
 entry/out/
 # 応募の下書きは手元にだけ置く
 entry/application.md
+entry/form.md

@@ -5,7 +5,7 @@
 #   bash tools/export.sh 3      # 主役を 3 番の標本にする
 #
 # 出力：
-#   entry/out/icon_1x1.png      1024×1024（文字なし）
+#   entry/out/icon_1x1.png      1024×1024（文字なし。既定は接写の図版。ICON_IMG=0 で銅版画）
 #   entry/out/cover_16x9.png    1920×1080 カバーアート
 #   entry/out/clean_16x9.png    1920×1080 文字なし版
 #   entry/out/poster_2x3.png    1000×1500
@@ -26,6 +26,8 @@ BOOK="$(uri "$ROOT/book/index.html")"
 shot() { # name width height file
   local q="v=$1"
   [ -n "$LEAD" ] && q="$q&id=$LEAD"
+  # 1:1 は「文字を入れない」規定なので、銅版画（AI の読めない書き込みを含む）ではなく接写の図版を使う
+  [ "$1" = icon ] && q="$q&img=${ICON_IMG:-3}"
   "$CHROME" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 \
     --window-size="$2,$3" --virtual-time-budget=8000 \
     --screenshot="$OUT/$4" "$VISUALS?$q" >/dev/null 2>&1

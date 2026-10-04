@@ -56,12 +56,14 @@
   const specs = D.specimens;
   const lead = specs.find((s) => String(s.id) === q.get('id')) || specs[0];
   const others = specs.filter((s) => s !== lead);
-  const imgOf = (s) => (s && s.images && s.images[0] ? `../book/data/${s.images[0]}` : null);
+  const imgOf = (s, k = 0) => (s && s.images && s.images[k] ? `../book/data/${s.images[k]}` : null);
+  // ?img=1 などで 1:1 に使う図版を選べる（0 は銅版画風。AI が描いた読めない書き込みを含むことがある）
+  const iconImg = +(q.get('img') || 0);
   const nameOf = (s) => G.nameFromCoords(s.coords, G.speciesLengthFor(s.farness));
   const mean = (vs) => vs[0].map((_, i) => vs.reduce((a, v) => a + v[i], 0) / vs.length);
 
-  const plate = (s, x, y, w, h) => {
-    const src = imgOf(s);
+  const plate = (s, x, y, w, h, k = 0) => {
+    const src = imgOf(s, k);
     return `<div class="plate${src ? '' : ' empty'}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">${src ? `<img src="${src}" alt="">` : ''}</div>`;
   };
   // 標本箱のように図版を格子に並べる
@@ -76,7 +78,7 @@
 
   const sheets = {
     // 1:1 文字なし：主役の標本の図版を 1 枚
-    icon: () => plate(lead, 112, 112, 800, 800),
+    icon: () => plate(lead, 112, 112, 800, 800, iconImg),
 
     // 16:9 カバーアート：左に標本箱（3×2）、右に全標本の重心から書いた表題の文字列と、縦書きの題字
     cover: () =>
