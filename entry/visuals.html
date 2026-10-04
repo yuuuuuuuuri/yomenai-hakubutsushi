@@ -31,7 +31,7 @@
   .plate img { width: 100%; height: 100%; object-fit: cover; display: block; mix-blend-mode: multiply; }
   .plate.empty::before { content: ""; position: absolute; inset: 18%; border: 1px dashed var(--rule); }
 
-  #icon { width: 1024px; height: 1024px; }
+  #icon, #icon_full, #icon_box { width: 1024px; height: 1024px; }
   #cover, #clean { width: 1920px; height: 1080px; }
   #poster { width: 1000px; height: 1500px; }
 
@@ -62,9 +62,9 @@
   const nameOf = (s) => G.nameFromCoords(s.coords, G.speciesLengthFor(s.farness));
   const mean = (vs) => vs[0].map((_, i) => vs.reduce((a, v) => a + v[i], 0) / vs.length);
 
-  const plate = (s, x, y, w, h, k = 0) => {
+  const plate = (s, x, y, w, h, k = 0, style = '') => {
     const src = imgOf(s, k);
-    return `<div class="plate${src ? '' : ' empty'}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">${src ? `<img src="${src}" alt="">` : ''}</div>`;
+    return `<div class="plate${src ? '' : ' empty'}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;${style}">${src ? `<img src="${src}" alt="">` : ''}</div>`;
   };
   // 標本箱のように図版を格子に並べる
   const grid = (list, x, y, cols, rows, cell, gap) => {
@@ -79,6 +79,16 @@
   const sheets = {
     // 1:1 文字なし：主役の標本の図版を 1 枚
     icon: () => plate(lead, 112, 112, 800, 800, iconImg),
+
+    // 1:1 全面：主役の接写を余白なしで。小さな一覧でもいちばん大きく見える
+    icon_full: () => plate(lead, 0, 0, 1024, 1024, iconImg, 'border:0'),
+
+    // 1:1 標本箱：8 体の接写を 3×3 に収め、主役を中央に、最後の 1 区画は空けておく（まだ見つかっていない 1 体）
+    icon_box: () => {
+      const ring = [...others.slice(0, 4), null, ...others.slice(4, 7)];
+      const order = [ring[0], ring[1], ring[2], ring[3], lead, ring[5], ring[6], ring[7], null];
+      return order.map((s, i) => plate(s, 44 + (i % 3) * 318, 44 + Math.floor(i / 3) * 318, 300, 300, iconImg)).join('');
+    },
 
     // 16:9 カバーアート：左に標本箱（3×2）、右に全標本の重心から書いた表題の文字列と、縦書きの題字
     cover: () =>
@@ -99,7 +109,7 @@
       `<div class="title-v" style="right:96px;top:860px;font-size:40px">読めない博物誌</div>` +
       `<div class="title-en" style="left:90px;top:1360px;font-size:26px">An Unreadable Natural History</div>`,
   };
-  const sizes = { icon: '1:1  1024×1024（文字なし）', cover: '16:9  1920×1080 カバーアート', clean: '16:9  1920×1080 文字なし版', poster: '2:3  1000×1500（任意）' };
+  const sizes = { icon: '1:1  1024×1024（文字なし）', icon_full: '1:1  全面', icon_box: '1:1  標本箱', cover: '16:9  1920×1080 カバーアート', clean: '16:9  1920×1080 文字なし版', poster: '2:3  1000×1500（任意）' };
 
   const root = document.getElementById('sheets');
   if (only) document.body.classList.add('single');
