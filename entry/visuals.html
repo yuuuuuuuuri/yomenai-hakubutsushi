@@ -32,7 +32,7 @@
   .plate.empty::before { content: ""; position: absolute; inset: 18%; border: 1px dashed var(--rule); }
 
   #icon, #icon_full, #icon_box, #icon_engraving, #icon_titled { width: 1024px; height: 1024px; }
-  #cover, #clean { width: 1920px; height: 1080px; }
+  #cover, #clean, #cover_all, #clean_all, #cover_pair, #clean_pair { width: 1920px; height: 1080px; }
   #poster { width: 1000px; height: 1500px; }
 
   .title-v { position: absolute; writing-mode: vertical-rl; font-weight: 600; letter-spacing: .5em; }
@@ -88,6 +88,21 @@
     return out;
   };
 
+  // 16:9 の題字まわり（罫・縦書きの題字・全標本の重心から書いた表題の文字列・副題）。ruleX は罫の位置
+  const coverTitle = (ruleX, top, height, subY) =>
+    `<div class="rule-v" style="left:${ruleX}px;top:${top}px;height:${height}px"></div>` +
+    `<div class="title-v" style="left:${ruleX + 104}px;top:${top}px;font-size:46px">読めない博物誌</div>` +
+    `<div class="glyph-name" style="left:${ruleX + 248}px;top:${top}px;width:64px">${G.nameSVG(G.nameFromCoords(mean(specs.map((s) => s.coords)), 3), { size: 60, vertical: true, gap: 0.45 })}</div>` +
+    `<div class="title-en" style="left:120px;top:${subY}px;font-size:30px">An Unreadable Natural History</div>`;
+  // 4×2 の標本箱（1 区画 324px）。cells は [標本, 図版の番号] の並び
+  const box4x2 = (cells) => cells.map(([s, k], i) => plate(s, 120 + (i % 4) * 348, 180 + Math.floor(i / 4) * 348, 324, 324, k)).join('');
+  // 銅版画と接写を上下で対にする 4 体（色の違いが出るものを選んだ）
+  const PAIR_IDS = [2, 3, 5, 7];
+  const pairCells = () => {
+    const four = PAIR_IDS.map((id) => specs.find((s) => s.id === id)).filter(Boolean);
+    return [...four.map((s) => [s, 0]), ...four.map((s) => [s, 3])];
+  };
+
   const sheets = {
     // 1:1 文字なし：主役の標本の図版を 1 枚
     icon: () => plate(lead, 112, 112, 800, 800, iconImg),
@@ -132,6 +147,14 @@
     // 16:9 文字なし版：カバーアートから題字・名前・罫を除いたもの（構図は同じ）
     clean: () => grid([lead, ...others], 120, 122, 3, 2, 400, 36),
 
+    // 16:9 案B：8 体すべての銅版画を図鑑の番号順に 4×2 で
+    cover_all: () => box4x2(specs.slice(0, 8).map((s) => [s, 0])) + coverTitle(1528, 180, 672, 912),
+    clean_all: () => box4x2(specs.slice(0, 8).map((s) => [s, 0])) + `<div class="rule-v" style="left:1528px;top:180px;height:672px"></div>`,
+
+    // 16:9 案C：上段に銅版画、下段に同じ標本の接写。図鑑の体裁と、生きものの存在感を両方見せる
+    cover_pair: () => box4x2(pairCells()) + coverTitle(1528, 180, 672, 912),
+    clean_pair: () => box4x2(pairCells()) + `<div class="rule-v" style="left:1528px;top:180px;height:672px"></div>`,
+
     // 2:3 縦長キービジュアル：主図版、縦書きの名前、題字
     poster: () =>
       plate(lead, 90, 110, 680, 680) +
@@ -140,7 +163,7 @@
       `<div class="title-v" style="right:96px;top:860px;font-size:40px">読めない博物誌</div>` +
       `<div class="title-en" style="left:90px;top:1360px;font-size:26px">An Unreadable Natural History</div>`,
   };
-  const sizes = { icon: '1:1  1024×1024（文字なし）', icon_full: '1:1  全面', icon_box: '1:1  標本箱', icon_engraving: '1:1  銅版画の標本箱', icon_titled: '1:1  題字入り（SNS・記事用）', cover: '16:9  1920×1080 カバーアート', clean: '16:9  1920×1080 文字なし版', poster: '2:3  1000×1500（任意）' };
+  const sizes = { icon: '1:1  1024×1024（文字なし）', icon_full: '1:1  全面', icon_box: '1:1  標本箱', icon_engraving: '1:1  銅版画の標本箱', icon_titled: '1:1  題字入り（SNS・記事用）', cover_all: '16:9  案B 8体', clean_all: '16:9  案B 文字なし', cover_pair: '16:9  案C 銅版画と接写', clean_pair: '16:9  案C 文字なし', cover: '16:9  1920×1080 カバーアート', clean: '16:9  1920×1080 文字なし版', poster: '2:3  1000×1500（任意）' };
 
   const root = document.getElementById('sheets');
   if (only) document.body.classList.add('single');
