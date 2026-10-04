@@ -121,6 +121,8 @@
   }
   .specimen .readable { margin-top: 6mm; font-size: 8.5pt; line-height: 1.9; }
   .specimen .readable .neg { font-family: "EB Garamond", "Shippori Mincho", serif; }
+  .specimen .readable .last { margin-top: 1.2mm; }
+  .specimen .readable .note { font-size: 7.5pt; color: var(--ink-soft); }
   .specimen .readable .meta { margin-top: 2mm; font-size: 7.5pt; color: var(--ink-soft); }
   .specimen .parents { display: inline-flex; gap: 2mm; align-items: center; vertical-align: middle; }
   .specimen .parents svg { height: 3.6mm; width: auto; }
@@ -215,16 +217,25 @@
 
     for (const s of members) {
       const [main, ...subs] = s.images || [];
-      const negs = s.negatives_ja || s.negatives || [];
-      const isJa = !!s.negatives_ja || negs.some((n) => /[^\x00-\x7f]/.test(n));
+      const answers = s.negatives_ja || s.negatives || [];
+      const isJa = !!s.negatives_ja || answers.some((n) => /[^\x00-\x7f]/.test(n));
+      // ConceptLab は、最後の画像に VLM が答えたところで学習を終える。最後の答えは遠ざける対象にはならず、
+      // 完成した姿への答えになる。だから「これではないもの」はそれより前の答えだけで、最後の答えは別に記す
+      const negs = answers.length > 1 ? answers.slice(0, -1) : answers;
+      const last = answers.length > 1 ? answers[answers.length - 1] : null;
+      // VLM の答えは冠詞なしの名詞（ConceptLab が先頭の "a " を外している）なので、a / an を補う
+      const article = (n) => (/^(a|an|the)\s/i.test(n) ? '' : /^[aeiou]/i.test(n) ? 'an ' : 'a ');
       // 交配種は VLM に問われていないので、両親のどちらでもないことだけが書ける
       const negText = !negs.length && s.parents
         ? `No.${pad3(s.parents[0])} でも No.${pad3(s.parents[1])} でもない。`
         : isJa
           ? negs.map((n) => `${esc(n)}ではない。`).join('')
-          // VLM の答えは冠詞なしの名詞（ConceptLab が先頭の "a " を外している）なので、a / an を補う
-          : negs.map((n) => `Not ${/^(a|an|the)\s/i.test(n) ? '' : /^[aeiou]/i.test(n) ? 'an ' : 'a '}${esc(n)}.`).join(' ');
-      const desc = (s.neighbors || []).map((w) => G.nameSVG(wordName(w), { size: 40, gap: 0.3 })).join('');
+          : negs.map((n) => `Not ${article(n)}${esc(n)}.`).join(' ');
+      const lastText = last && (isJa ? `「${esc(last)}」` : `“${article(last)}${esc(last)}”`);
+      // 部の名前に使ったカテゴリ語は、どの標本でも最も近い語になるので記載からは外す
+      const stop = new Set([ch.key, ch.key + 's', ch.key + 'es']);
+      const desc = (s.neighbors || []).filter((w) => !stop.has(w.word))
+        .map((w) => G.nameSVG(wordName(w), { size: 40, gap: 0.3 })).join('');
       const parents = s.parents
         ? `<div>両親　<span class="parents">No.${pad3(s.parents[0])} ${G.nameSVG(nameOf(byId[s.parents[0]]), { size: 40 })}</span>
              ×　<span class="parents">No.${pad3(s.parents[1])} ${G.nameSVG(nameOf(byId[s.parents[1]]), { size: 40 })}</span></div>`
@@ -241,6 +252,7 @@
         <div class="desc"><span class="label">記載</span>${desc}</div>
         <div class="readable">
           <div><span class="label">これではないもの</span><span class="neg">${negText}</span></div>
+          ${lastText ? `<div class="last"><span class="label">最後の答え</span><span class="neg">${lastText}</span><span class="note">　この答えから遠ざけられる前に、探索は終わった。</span></div>` : ''}
           ${parents}
           <div class="meta">既知の語からの遠さ ${(s.outlierness ?? s.farness).toFixed(3)}${s.seed !== undefined ? `　／　seed ${s.seed}` : ''}</div>
         </div>`);
@@ -250,7 +262,7 @@
   page('rosetta', `
     <h2>手がかり</h2>
     <div class="caption">既知の語を、同じ規則で書き表したもの。既知の語は語彙の空間そのものの上にあるため、種名は一文字になる。<br>
-      本文「記載」の欄には、各標本にもっとも近い既知の語が、この文字で記されている。</div>
+      本文「記載」の欄には、各標本にもっとも近い既知の語（部の名前に使った語を除く）が、この文字で記されている。</div>
     <table>${D.rosetta.map((w) => `<tr><td class="word">${esc(w.word)}</td><td>${G.nameSVG(wordName(w), { size: 40, gap: 0.3 })}</td></tr>`).join('')}</table>`);
 
   // 画面幅が頁より狭いときは、頁ごと縮小して見せる
