@@ -222,7 +222,8 @@
         ? `No.${pad3(s.parents[0])} でも No.${pad3(s.parents[1])} でもない。`
         : isJa
           ? negs.map((n) => `${esc(n)}ではない。`).join('')
-          : negs.map((n) => `Not ${esc(n)}.`).join(' ');
+          // VLM の答えは冠詞なしの名詞（ConceptLab が先頭の "a " を外している）なので、a / an を補う
+          : negs.map((n) => `Not ${/^(a|an|the)\s/i.test(n) ? '' : /^[aeiou]/i.test(n) ? 'an ' : 'a '}${esc(n)}.`).join(' ');
       const desc = (s.neighbors || []).map((w) => G.nameSVG(wordName(w), { size: 40, gap: 0.3 })).join('');
       const parents = s.parents
         ? `<div>両親　<span class="parents">No.${pad3(s.parents[0])} ${G.nameSVG(nameOf(byId[s.parents[0]]), { size: 40 })}</span>
