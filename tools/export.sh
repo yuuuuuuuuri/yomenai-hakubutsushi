@@ -3,6 +3,7 @@
 #
 #   bash tools/export.sh        # 主役は 1 番の標本
 #   bash tools/export.sh 3      # 主役を 3 番の標本にする
+#   EDITION=complete bash tools/export.sh   # 完全版の PDF とカバー（book/complete/）
 #
 # 出力：
 #   entry/out/icon_1x1.png      1024×1024（文字なし。既定はカバーと同じ銅版画の標本箱）
@@ -35,6 +36,19 @@ shot() { # name width height file
     --screenshot="$OUT/$4" "$VISUALS?$q" >/dev/null 2>&1
   echo "  $4"
 }
+
+# 完全版：EDITION=complete bash tools/export.sh で、完全版の PDF と共有用のカバー画像だけを書き出す
+if [ "${EDITION:-}" = complete ]; then
+  CBOOK="$(uri "$ROOT/book/complete/index.html")"
+  "$CHROME" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 \
+    --window-size=1920,1080 --virtual-time-budget=8000 \
+    --screenshot="$ROOT/book/complete/cover_16x9.png" "$VISUALS?v=cover_parts&data=complete" >/dev/null 2>&1
+  echo "  book/complete/cover_16x9.png"
+  "$CHROME" --headless=new --disable-gpu --no-pdf-header-footer --virtual-time-budget=15000 \
+    --print-to-pdf="$ROOT/book/complete/yomenai-hakubutsushi-complete.pdf" "$CBOOK" >/dev/null 2>&1
+  echo "  book/complete/yomenai-hakubutsushi-complete.pdf"
+  exit 0
+fi
 
 echo "応募画像："
 shot icon 1024 1024 icon_1x1.png

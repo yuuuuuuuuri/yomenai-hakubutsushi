@@ -32,7 +32,7 @@
   .plate.empty::before { content: ""; position: absolute; inset: 18%; border: 1px dashed var(--rule); }
 
   #icon, #icon_full, #icon_box, #icon_engraving, #icon_titled { width: 1024px; height: 1024px; }
-  #cover, #clean, #cover_all, #clean_all, #cover_pair, #clean_pair { width: 1920px; height: 1080px; }
+  #cover, #clean, #cover_all, #clean_all, #cover_pair, #clean_pair, #cover_parts { width: 1920px; height: 1080px; }
   #poster { width: 1000px; height: 1500px; }
 
   .title-v { position: absolute; writing-mode: vertical-rl; font-weight: 600; letter-spacing: .5em; }
@@ -46,7 +46,11 @@
 <div id="sheets"></div>
 
 <script src="../book/glyphs.js"></script>
-<script src="../book/data/specimens.js" onerror="this.remove()"></script>
+<script>
+  // ?data=complete で完全版のデータ（book/complete/data）を使う。既定は応募版（book/data）
+  window.DATA_BASE = new URLSearchParams(location.search).get('data') === 'complete' ? '../book/complete/data/' : '../book/data/';
+  document.write('<script src="' + window.DATA_BASE + 'specimens.js" onerror="this.remove()"><\/script>');
+</script>
 <script src="../book/mock-data.js"></script>
 <script>
 (function () {
@@ -56,7 +60,7 @@
   const specs = D.specimens;
   const lead = specs.find((s) => String(s.id) === q.get('id')) || specs[0];
   const others = specs.filter((s) => s !== lead);
-  const imgOf = (s, k = 0) => (s && s.images && s.images[k] ? `../book/data/${s.images[k]}` : null);
+  const imgOf = (s, k = 0) => (s && s.images && s.images[k] ? `${window.DATA_BASE}${s.images[k]}` : null);
   // ?img=1 などで 1:1 に使う図版を選べる（0 は銅版画風。AI が描いた読めない書き込みを含むことがある）
   const iconImg = +(q.get('img') || 0);
   const nameOf = (s) => G.nameFromCoords(s.coords, G.speciesLengthFor(s.farness));
@@ -155,6 +159,16 @@
     cover_pair: () => box4x2(pairCells()) + coverTitle(1528, 180, 672, 912),
     clean_pair: () => box4x2(pairCells()) + `<div class="rule-v" style="left:1528px;top:180px;height:672px"></div>`,
 
+    // 16:9 完全版：各部の最初の 1 体を、上段に銅版画、下段に接写で 5 列に並べる
+    cover_parts: () => {
+      const firsts = (D.chapters || []).map((ch) => specs.find((s) => s.chapter === ch.key)).filter(Boolean).slice(0, 5);
+      const n = firsts.length, cell = 252, gap = 24;
+      const cells = [...firsts.map((s) => [s, 0]), ...firsts.map((s) => [s, 3])];
+      return cells.map(([s, k], i) => plate(s, 120 + (i % n) * (cell + gap), 252 + Math.floor(i / n) * (cell + gap), cell, cell, k)).join('') +
+        coverTitle(1528, 180, 672, 912) +
+        `<div class="title-en" style="left:120px;top:180px;font-size:22px;font-style:normal;letter-spacing:.5em">完全版</div>`;
+    },
+
     // 2:3 縦長キービジュアル：主図版、縦書きの名前、題字
     poster: () =>
       plate(lead, 90, 110, 680, 680) +
@@ -163,7 +177,7 @@
       `<div class="title-v" style="right:96px;top:860px;font-size:40px">読めない博物誌</div>` +
       `<div class="title-en" style="left:90px;top:1360px;font-size:26px">An Unreadable Natural History</div>`,
   };
-  const sizes = { icon: '1:1  1024×1024（文字なし）', icon_full: '1:1  全面', icon_box: '1:1  標本箱', icon_engraving: '1:1  銅版画の標本箱', icon_titled: '1:1  題字入り（SNS・記事用）', cover_all: '16:9  案B 8体', clean_all: '16:9  案B 文字なし', cover_pair: '16:9  案C 銅版画と接写', clean_pair: '16:9  案C 文字なし', cover: '16:9  1920×1080 カバーアート', clean: '16:9  1920×1080 文字なし版', poster: '2:3  1000×1500（任意）' };
+  const sizes = { icon: '1:1  1024×1024（文字なし）', icon_full: '1:1  全面', icon_box: '1:1  標本箱', icon_engraving: '1:1  銅版画の標本箱', icon_titled: '1:1  題字入り（SNS・記事用）', cover_all: '16:9  案B 8体', clean_all: '16:9  案B 文字なし', cover_pair: '16:9  案C 銅版画と接写', cover_parts: '16:9  完全版（各部の 1 体目）', clean_pair: '16:9  案C 文字なし', cover: '16:9  1920×1080 カバーアート', clean: '16:9  1920×1080 文字なし版', poster: '2:3  1000×1500（任意）' };
 
   const root = document.getElementById('sheets');
   if (only) document.body.classList.add('single');
