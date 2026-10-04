@@ -5,7 +5,7 @@
 #   bash tools/export.sh 3      # 主役を 3 番の標本にする
 #
 # 出力：
-#   entry/out/icon_1x1.png      1024×1024（文字なし。既定は 8 体の接写の標本箱）
+#   entry/out/icon_1x1.png      1024×1024（文字なし。既定はカバーと同じ銅版画の標本箱）
 #   entry/out/cover_16x9.png    1920×1080 カバーアート
 #   entry/out/clean_16x9.png    1920×1080 文字なし版
 #   entry/out/poster_2x3.png    1000×1500
@@ -27,8 +27,9 @@ shot() { # name width height file
   local q="v=$1"
   [ -n "$LEAD" ] && q="$q&id=$LEAD"
   # 1:1 は「文字を入れない」規定なので、銅版画（AI の読めない書き込みを含む）ではなく接写の図版を使う
-  # 既定は 8 体の接写を 3×3 に並べた「標本箱」。ICON_STYLE=icon_full で主役の接写を全面、icon で余白つき
-  [ "$1" = icon ] && q="v=${ICON_STYLE:-icon_box}&img=${ICON_IMG:-3}" && [ -n "$LEAD" ] && q="$q&id=$LEAD"
+  # 既定はカバーと同じ銅版画の標本箱（書き込みを避けて切り抜いた 4 体）。
+  # ICON_STYLE=icon_box で 8 体の接写、icon_full で主役の接写を全面、icon で余白つき
+  [ "$1" = icon ] && q="v=${ICON_STYLE:-icon_engraving}&img=${ICON_IMG:-3}" && [ -n "$LEAD" ] && q="$q&id=$LEAD"
   "$CHROME" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 \
     --window-size="$2,$3" --virtual-time-budget=8000 \
     --screenshot="$OUT/$4" "$VISUALS?$q" >/dev/null 2>&1

@@ -31,7 +31,7 @@
   .plate img { width: 100%; height: 100%; object-fit: cover; display: block; mix-blend-mode: multiply; }
   .plate.empty::before { content: ""; position: absolute; inset: 18%; border: 1px dashed var(--rule); }
 
-  #icon, #icon_full, #icon_box { width: 1024px; height: 1024px; }
+  #icon, #icon_full, #icon_box, #icon_engraving { width: 1024px; height: 1024px; }
   #cover, #clean { width: 1920px; height: 1080px; }
   #poster { width: 1000px; height: 1500px; }
 
@@ -66,6 +66,18 @@
     const src = imgOf(s, k);
     return `<div class="plate${src ? '' : ' empty'}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;${style}">${src ? `<img src="${src}" alt="">` : ''}</div>`;
   };
+  // 図版の一部だけを切り抜いて置く。crop = [左, 上, 一辺]（図版の幅に対する割合）
+  const croppedPlate = (s, x, y, w, h, crop) => {
+    const src = imgOf(s, 0);
+    if (!src) return plate(s, x, y, w, h);
+    const [cx, cy, cs] = crop;
+    return `<div class="plate" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">` +
+      `<img src="${src}" alt="" style="position:absolute;width:${100 / cs}%;height:${100 / cs}%;left:${(-cx / cs) * 100}%;top:${(-cy / cs) * 100}%;object-fit:fill">` +
+      `</div>`;
+  };
+  // 銅版画風の図版の、AI が描いた読めない書き込み（上下の余白の文字列など）を避けて生きものだけを残す切り抜き
+  const ENGRAVING_CROPS = { 2: [0.25, 0.17, 0.72], 3: [0.04, 0.04, 0.92], 5: [0.15, 0.05, 0.735], 8: [0, 0, 1] };
+
   // 標本箱のように図版を格子に並べる
   const grid = (list, x, y, cols, rows, cell, gap) => {
     let out = '';
@@ -79,6 +91,13 @@
   const sheets = {
     // 1:1 文字なし：主役の標本の図版を 1 枚
     icon: () => plate(lead, 112, 112, 800, 800, iconImg),
+
+    // 1:1 銅版画の標本箱：16:9 のカバーと同じ紙と額装で 4 体を 2×2 に。書き込みのない部分だけを切り抜く
+    icon_engraving: () => {
+      const picks = Object.keys(ENGRAVING_CROPS).map(Number).map((id) => specs.find((s) => s.id === id)).filter(Boolean);
+      return picks.slice(0, 4).map((s, i) =>
+        croppedPlate(s, 64 + (i % 2) * 464, 64 + Math.floor(i / 2) * 464, 432, 432, ENGRAVING_CROPS[s.id])).join('');
+    },
 
     // 1:1 全面：主役の接写を余白なしで。小さな一覧でもいちばん大きく見える
     icon_full: () => plate(lead, 0, 0, 1024, 1024, iconImg, 'border:0'),
@@ -109,7 +128,7 @@
       `<div class="title-v" style="right:96px;top:860px;font-size:40px">読めない博物誌</div>` +
       `<div class="title-en" style="left:90px;top:1360px;font-size:26px">An Unreadable Natural History</div>`,
   };
-  const sizes = { icon: '1:1  1024×1024（文字なし）', icon_full: '1:1  全面', icon_box: '1:1  標本箱', cover: '16:9  1920×1080 カバーアート', clean: '16:9  1920×1080 文字なし版', poster: '2:3  1000×1500（任意）' };
+  const sizes = { icon: '1:1  1024×1024（文字なし）', icon_full: '1:1  全面', icon_box: '1:1  標本箱', icon_engraving: '1:1  銅版画の標本箱', cover: '16:9  1920×1080 カバーアート', clean: '16:9  1920×1080 文字なし版', poster: '2:3  1000×1500（任意）' };
 
   const root = document.getElementById('sheets');
   if (only) document.body.classList.add('single');
