@@ -265,6 +265,7 @@
       <dt>書名</dt><dd>読めない博物誌</dd>
       <dt>標本</dt><dd>${D.specimens.length} 体</dd>
       <dt>生成</dt><dd>ConceptLab（Richardson et al., 2023）／ ${esc(D.meta.model || '')}</dd>
+      ${D.meta.vlm && D.meta.vlm.length ? `<dt>否定語</dt><dd>${esc(D.meta.vlm.join('、'))} が「これは何か」に答えた語</dd>` : ''}
       <dt>文字</dt><dd>語彙の主成分座標 ${G.COORD_DIMS} 次元を、8 次元ずつ 1 文字に写す規則による</dd>
       <dt>作成</dt><dd>${esc(D.meta.created || '')}</dd>
     </dl>`);
