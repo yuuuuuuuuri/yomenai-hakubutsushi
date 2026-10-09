@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>読めない博物誌 完全版</title>
+<title>読めない博物誌（応募版・2026-10-04）</title>
 <meta name="description" content="AIの潜在空間で「既存のどの生きものにも似ない」ように探索された生きものの図鑑。名前は、語彙空間における座標から規則で書かれた、読めない文字。">
 <meta property="og:type" content="book">
-<meta property="og:title" content="読めない博物誌 完全版 — An Unreadable Natural History">
+<meta property="og:title" content="読めない博物誌 — An Unreadable Natural History">
 <meta property="og:description" content="AIの潜在空間で「既存のどの生きものにも似ない」ように探索された生きものの図鑑。この文字は読めない。けれど、読み方は存在する。">
-<meta property="og:url" content="https://yuuuuuuuuri.github.io/yomenai-hakubutsushi/">
-<meta property="og:image" content="https://yuuuuuuuuri.github.io/yomenai-hakubutsushi/cover_16x9.png">
-<link rel="canonical" href="https://yuuuuuuuuri.github.io/yomenai-hakubutsushi/">
+<meta property="og:url" content="https://yuuuuuuuuri.github.io/yomenai-hakubutsushi/2026-10-04/">
+<meta property="og:image" content="https://yuuuuuuuuri.github.io/yomenai-hakubutsushi/2026-10-04/cover_16x9.png">
+<link rel="canonical" href="https://yuuuuuuuuri.github.io/yomenai-hakubutsushi/2026-10-04/">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -77,17 +77,6 @@
   .cover .en { font-family: "EB Garamond", serif; font-style: italic; font-size: 11pt; color: var(--ink-soft); letter-spacing: .08em; }
   .cover .note { position: absolute; bottom: 24mm; left: 0; right: 0; font-size: 8pt; color: var(--ink-soft); }
 
-  .cover .edition { font-size: 10pt; letter-spacing: .6em; padding-left: .6em; margin-top: 5mm; color: var(--ink-soft); }
-
-  /* 目次 */
-  .contents h2 { font-weight: 400; font-size: 13pt; letter-spacing: .4em; margin: 2mm 0 3mm; }
-  .toc-ch { display: flex; justify-content: space-between; font-size: 9pt; letter-spacing: .15em; margin: 2.2mm 0 .8mm; padding-bottom: .8mm; border-bottom: 0.25mm solid var(--rule); }
-  .toc-sp { display: flex; align-items: center; gap: 4mm; font-size: 8pt; padding: .3mm 0 .3mm 6mm; }
-  .toc-sp .no { font-family: "EB Garamond", serif; width: 14mm; color: var(--ink-soft); }
-  .toc-sp .nm { flex: 1; }
-  .toc-sp .nm svg { height: 3.3mm; width: auto; }
-  .contents .pg { font-family: "EB Garamond", serif; color: var(--ink-soft); }
-
   /* 序 */
   .preface { display: flex; justify-content: center; }
   .preface .vtext {
@@ -133,8 +122,7 @@
   }
   .specimen .readable { margin-top: 6mm; font-size: 8.5pt; line-height: 1.9; }
   .specimen .readable .neg { font-family: "EB Garamond", "Shippori Mincho", serif; }
-  .specimen .readable .last, .specimen .readable .syn { margin-top: 1.2mm; }
-  .specimen .readable .syn .parents { margin-left: 1mm; }
+  .specimen .readable .last { margin-top: 1.2mm; }
   .specimen .readable .note { font-size: 7.5pt; color: var(--ink-soft); }
   .specimen .readable .meta { margin-top: 2mm; font-size: 7.5pt; color: var(--ink-soft); }
   .specimen .parents { display: inline-flex; gap: 2mm; align-items: center; vertical-align: middle; }
@@ -158,29 +146,24 @@
 <body>
 <div class="toolbar">
   <span id="data-state"></span>
-  <a href="2026-10-04/">応募版（2026-10-04・8体）</a>
-  <a href="script-lab.html">文字の規則</a>
+  <a href="../">最新の完全版</a>
+  <a href="../script-lab.html">文字の規則</a>
   <a href="yomenai-hakubutsushi.pdf" id="pdf-link" hidden>PDF</a>
   <span class="print-hint">印刷：用紙 B5・余白なし・背景を印刷</span>
 </div>
 <main class="book" id="book"></main>
 
-<script src="glyphs.js?v=2026-10-09"></script>
-<script src="data/specimens.js?v=2026-10-09" onerror="this.remove()"></script>
-<script src="mock-data.js"></script>
+<script src="glyphs.js"></script>
+<script src="data/specimens.js" onerror="this.remove()"></script>
+<script src="../mock-data.js"></script>
 <script>
 (function () {
   const G = window.Glyphs;
   const D = window.HAKUBUTSUSHI;
-  // 完全版から外した標本は頁に載せず、番号を繰り上げる。外した理由は奥付に記す
-  const SPEC = D.specimens.filter((s) => !s.removed);
-  const EXCLUDED = [...(D.meta.excluded || []), ...D.specimens.filter((s) => s.removed)];
-  // 図鑑の番号は、収めた順（内部の id の順）に 1 から振る。id はドライブのフォルダの番号で、応募版の番号と同じ
-  const NO = new Map([...SPEC].sort((a, b) => a.id - b.id).map((s, i) => [s.id, i + 1]));
   const book = document.getElementById('book');
   document.getElementById('data-state').innerHTML = D.mock
     ? '<span class="badge">試作データで表示中</span> data/specimens.js を置くと本物に切り替わります'
-    : `<span class="title">読めない博物誌 完全版</span>　${SPEC.length} 体の標本`;
+    : `<span class="title">読めない博物誌</span>　応募版（2026-10-04）・${D.specimens.length} 体の標本`;
   // 公開版では同じ階層に PDF を置く。あればリンクを出す
   fetch('yomenai-hakubutsushi.pdf', { method: 'HEAD' })
     .then((r) => { if (r.ok) document.getElementById('pdf-link').hidden = false; })
@@ -189,7 +172,7 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const mean = (vs) => vs[0].map((_, i) => vs.reduce((s, v) => s + v[i], 0) / vs.length);
   const pad3 = (n) => String(n).padStart(3, '0');
-  const byId = Object.fromEntries(SPEC.map((s) => [s.id, s]));
+  const byId = Object.fromEntries(D.specimens.map((s) => [s.id, s]));
 
   // 既知の語は種名 1 文字、生き物は既知からの遠さに応じて 2–5 文字
   const nameOf = (s) => G.nameFromCoords(s.coords, G.speciesLengthFor(s.farness));
@@ -206,13 +189,12 @@
   }
 
   // 表紙：この本の名前は、収められた全標本の座標の重心から書かれる
-  const centroid = mean(SPEC.map((s) => s.coords));
+  const centroid = mean(D.specimens.map((s) => s.coords));
   page('cover', `
     <div class="book-name">${G.nameSVG(G.nameFromCoords(centroid, 3), { size: 60 })}</div>
     <h1>読めない博物誌</h1>
     <div class="en">An Unreadable Natural History</div>
-    <div class="edition">完全版</div>
-    <div class="note">表題の文字列は、本書に収めた ${SPEC.length} 体の座標の重心を書き表したもの</div>`);
+    <div class="note">表題の文字列は、本書に収めた ${D.specimens.length} 体の座標の重心を書き表したもの</div>`);
 
   page('preface', `
     <div class="vtext">
@@ -225,22 +207,9 @@
       <p>この文字は読めない。けれど、読み方は存在する。</p>
     </div>`);
 
-  const parts = D.chapters
-    .map((ch) => ({ ch, members: SPEC.filter((s) => s.chapter === ch.key) }))
-    .filter((p) => p.members.length);
-  let pg = folio + 2; // folio は序まで。次の目次の、さらに次の頁から数える
-  const tocRows = [];
-  for (const { ch, members } of parts) {
-    tocRows.push(`<div class="toc-ch"><span>${esc(ch.title)}</span><span class="pg">${pg++}</span></div>`);
-    for (const s of members) {
-      tocRows.push(`<div class="toc-sp"><span class="no">No.${pad3(NO.get(s.id))}</span><span class="nm">${G.nameSVG(nameOf(s), { size: 40, gap: 0.45 })}</span><span class="pg">${pg++}</span></div>`);
-    }
-  }
-  tocRows.push(`<div class="toc-ch"><span>手がかり</span><span class="pg">${pg++}</span></div>`);
-  tocRows.push(`<div class="toc-ch"><span>奥付</span><span class="pg">${pg++}</span></div>`);
-  page('contents', `<h2>目次</h2>${tocRows.join('')}`);
-
-  for (const { ch, members } of parts) {
+  for (const ch of D.chapters) {
+    const members = D.specimens.filter((s) => s.chapter === ch.key);
+    if (!members.length) continue;
     const genusOnly = G.nameFromCoords(mean(members.map((s) => s.coords)), 1);
     genusOnly.species = [];
     page('chapter', `
@@ -250,12 +219,7 @@
 
     for (const s of members) {
       const [main, ...subs] = s.images || [];
-      // VLM は同じ語を延々と繰り返す答えを返すことがある（例："fish - fish - fish - …"）。言い淀みとして残し、3 回までに縮める
-      const tidy = (n) => {
-        const parts = String(n).split(' - ').map((x) => x.trim()).filter(Boolean);
-        return parts.length > 3 && parts.every((x) => x === parts[0]) ? parts.slice(0, 3).join(' - ') + ' …' : String(n).trim();
-      };
-      const answers = (s.negatives_ja || s.negatives || []).map(tidy);
+      const answers = s.negatives_ja || s.negatives || [];
       const isJa = !!s.negatives_ja || answers.some((n) => /[^\x00-\x7f]/.test(n));
       // ConceptLab は、最後の画像に VLM が答えたところで学習を終える。最後の答えは遠ざける対象にはならず、
       // 完成した姿への答えになる。だから「これではないもの」はそれより前の答えだけで、最後の答えは別に記す
@@ -265,21 +229,21 @@
       const article = (n) => (/^(a|an|the)\s/i.test(n) ? '' : /^[aeiou]/i.test(n) ? 'an ' : 'a ');
       // 交配種は VLM に問われていないので、両親のどちらでもないことだけが書ける
       const negText = !negs.length && s.parents
-        ? `No.${pad3(NO.get(s.parents[0]))} でも No.${pad3(NO.get(s.parents[1]))} でもない。`
+        ? `No.${pad3(s.parents[0])} でも No.${pad3(s.parents[1])} でもない。`
         : isJa
           ? negs.map((n) => `${esc(n)}ではない。`).join('')
-          : negs.map((n) => `Not ${article(n)}${esc(n)}${n.endsWith('…') ? '' : '.'}`).join(' ');
+          : negs.map((n) => `Not ${article(n)}${esc(n)}.`).join(' ');
       const lastText = last && (isJa ? `「${esc(last)}」` : `“${article(last)}${esc(last)}”`);
       // 部の名前に使ったカテゴリ語は、どの標本でも最も近い語になるので記載からは外す
       const stop = new Set([ch.key, ch.key + 's', ch.key + 'es']);
       const desc = (s.neighbors || []).filter((w) => !stop.has(w.word))
         .map((w) => G.nameSVG(wordName(w), { size: 40, gap: 0.3 })).join('');
       const parents = s.parents
-        ? `<div>両親　<span class="parents">No.${pad3(NO.get(s.parents[0]))} ${G.nameSVG(nameOf(byId[s.parents[0]]), { size: 40 })}</span>
-             ×　<span class="parents">No.${pad3(NO.get(s.parents[1]))} ${G.nameSVG(nameOf(byId[s.parents[1]]), { size: 40 })}</span></div>`
+        ? `<div>両親　<span class="parents">No.${pad3(s.parents[0])} ${G.nameSVG(nameOf(byId[s.parents[0]]), { size: 40 })}</span>
+             ×　<span class="parents">No.${pad3(s.parents[1])} ${G.nameSVG(nameOf(byId[s.parents[1]]), { size: 40 })}</span></div>`
         : '';
       page('specimen', `
-        <header><span class="no">No. ${pad3(NO.get(s.id))}</span><span>${esc(ch.title)}</span></header>
+        <header><span class="no">No. ${pad3(s.id)}</span><span>${esc(ch.title)}</span></header>
         <div class="main">
           <div>
             <div class="plate">${main ? `<img src="data/${esc(main)}" alt="">` : '図　版'}</div>
@@ -292,7 +256,6 @@
           <div><span class="label">これではないもの</span><span class="neg">${negText}</span></div>
           ${lastText ? `<div class="last"><span class="label">最後の答え</span><span class="neg">${lastText}</span><span class="note">　この答えから遠ざけられる前に、探索は終わった。</span></div>` : ''}
           ${parents}
-          ${s.synonym ? `<div class="syn"><span class="label">旧名</span><span class="parents">${G.nameSVG(G.nameFromCoords(s.synonym.coords, G.speciesLengthFor(s.synonym.farness)), { size: 40 })}</span><span class="note">　${esc(s.synonym.edition)}（${esc(s.synonym.date)}）での名前${s.id !== NO.get(s.id) ? `（応募版では No.${pad3(s.id)}）` : ''}。この版で文字体系の軸を改めた</span></div>` : ''}
           <div class="meta">既知の語からの遠さ ${(s.outlierness ?? s.farness).toFixed(3)}${s.seed !== undefined ? `　／　seed ${s.seed}` : ''}</div>
         </div>`);
     }
@@ -314,10 +277,8 @@
 
   page('colophon', `
     <dl>
-      <dt>書名</dt><dd>読めない博物誌（完全版）</dd>
-      <dt>版</dt><dd>完全版。第二部以降を書き足し、文字体系の軸を乱数を用いない固有値分解で求め直して、全 ${SPEC.length} 体の名前を改めた。応募版（2026-10-04）に収めた標本には、応募版での名前を旧名として併記した</dd>
-      <dt>標本</dt><dd>${SPEC.length} 体</dd>
-      ${EXCLUDED.length ? `<dt>除いた標本</dt><dd>${EXCLUDED.map((s) => `応募版の No.${pad3(s.id)}（${esc(s.reason || '')}）`).join('、')}は収めず、以降の番号を繰り上げた</dd>` : ''}
+      <dt>書名</dt><dd>読めない博物誌</dd>
+      <dt>標本</dt><dd>${D.specimens.length} 体</dd>
       <dt>生成</dt><dd>ConceptLab（Richardson et al., 2023）／ ${esc(D.meta.model || '')}</dd>
       ${D.meta.vlm && D.meta.vlm.length ? `<dt>否定語</dt><dd>${esc(D.meta.vlm.join('、'))} が「これは何か」に答えた語</dd>` : ''}
       <dt>文字</dt><dd>語彙の主成分座標 ${G.COORD_DIMS} 次元を、8 次元ずつ 1 文字に写す規則による</dd>

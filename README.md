@@ -32,12 +32,15 @@ AIの潜在空間のなかで「既存のどの生きものにも似ない」よ
 ```
 yomenai-hakubutsushi/
 ├── colab/01_generate_specimens.ipynb  標本・図版・座標を生成する（Google Colab・GPU）
-└── book/
-    ├── index.html        図鑑本体（B5・印刷用）
-    ├── script-lab.html   文字の規則が連続性・近縁性を満たすかの検証ページ
-    ├── glyphs.js         座標 → 文字 の規則
-    ├── mock-data.js      試作用のダミーデータ（本物があれば使われない）
-    └── data/             Colab の出力（specimens.js と images/）をここに置く
+├── book/                              公開されるサイト（GitHub Pages）
+│   ├── index.html        図鑑の最新版（完全版：5 部・23 体）。B5・印刷用
+│   ├── data/             最新版のデータ（specimens.js と images/）
+│   ├── yomenai-hakubutsushi.pdf  最新版の PDF
+│   ├── script-lab.html   文字の規則が連続性・近縁性を満たすかの検証ページ
+│   ├── glyphs.js         座標 → 文字 の規則
+│   └── 2026-10-04/       応募時点の版（第一部 8 体）。記録として残す
+├── entry/visuals.html    応募画像・共有用カバーのテンプレート
+└── tools/export.sh       PDF・カバー・応募画像の書き出し
 ```
 
 ## 制作の流れ
@@ -51,9 +54,8 @@ yomenai-hakubutsushi/
 ## 国際AIクリエイターアワード2026 への応募
 
 - 応募内容の下書き・日程・注意点：`entry/application.md`（手元のみ。リポジトリには含めない）
-- 応募画像と PDF の書き出し：`bash tools/export.sh`（Google Chrome を使う。引数で主役の標本番号を選べる）
-  - `entry/out/` に 1:1・16:9（カバー／文字なし）・2:3 の 4 枚、`book/` に PDF と共有用画像ができる
-  - 試作データのまま書き出したものは仮。本物のデータを `book/data/` に置いてから書き出し直す
+- 最新版の PDF と共有用カバー：`bash tools/export.sh`（Google Chrome を使う）
+- 応募画像：`bash tools/export.sh entry`（応募時点の版のデータから。引数で主役の標本番号を選べる）
 - 公開されるのは `book/` フォルダ一式（`data/` と PDF を含む）。`main` に push すると GitHub Actions が GitHub Pages に公開する
 
 ## これから決めること

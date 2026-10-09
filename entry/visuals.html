@@ -47,8 +47,8 @@
 
 <script src="../book/glyphs.js"></script>
 <script>
-  // ?data=complete で完全版のデータ（book/complete/data）を使う。既定は応募版（book/data）
-  window.DATA_BASE = new URLSearchParams(location.search).get('data') === 'complete' ? '../book/complete/data/' : '../book/data/';
+  // 既定は最新版（book/data）。?data=submitted で応募時点の版（book/2026-10-04/data）を使う
+  window.DATA_BASE = new URLSearchParams(location.search).get('data') === 'submitted' ? '../book/2026-10-04/data/' : '../book/data/';
   document.write('<script src="' + window.DATA_BASE + 'specimens.js" onerror="this.remove()"><\/script>');
 </script>
 <script src="../book/mock-data.js"></script>
@@ -57,7 +57,7 @@
   const G = window.Glyphs, D = window.HAKUBUTSUSHI;
   const q = new URLSearchParams(location.search);
   const only = q.get('v');
-  const specs = D.specimens;
+  const specs = D.specimens.filter((s) => !s.removed); // 完全版で除いた標本の記録は読み飛ばす
   const lead = specs.find((s) => String(s.id) === q.get('id')) || specs[0];
   const others = specs.filter((s) => s !== lead);
   const imgOf = (s, k = 0) => (s && s.images && s.images[k] ? `${window.DATA_BASE}${s.images[k]}` : null);
