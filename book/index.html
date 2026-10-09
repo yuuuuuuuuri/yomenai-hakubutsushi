@@ -166,9 +166,8 @@
 (function () {
   const G = window.Glyphs;
   const D = window.HAKUBUTSUSHI;
-  // 外した標本は頁に載せず、番号を繰り上げる。外した理由は奥付に記す
+  // 外した標本は頁に載せず、番号を繰り上げる
   const SPEC = D.specimens.filter((s) => !s.removed);
-  const EXCLUDED = [...(D.meta.excluded || []), ...D.specimens.filter((s) => s.removed)];
   // 図鑑の番号は、収めた順（内部の id の順）に 1 から振る。id はドライブのフォルダの番号で、応募版の番号と同じ
   const NO = new Map([...SPEC].sort((a, b) => a.id - b.id).map((s, i) => [s.id, i + 1]));
   const book = document.getElementById('book');
@@ -306,11 +305,8 @@
   page('colophon', `
     <dl>
       <dt>書名</dt><dd>読めない博物誌</dd>
-      <dt>版</dt><dd>第二部以降を書き足し、文字体系の軸を乱数を用いない固有値分解で求め直して、全 ${SPEC.length} 体の名前を改めた</dd>
       <dt>標本</dt><dd>${SPEC.length} 体</dd>
-      ${EXCLUDED.length ? `<dt>除いた標本</dt><dd>${EXCLUDED.map((s) => `応募版の No.${pad3(s.id)}（${esc(s.reason || '')}）`).join('、')}は収めず、以降の番号を繰り上げた</dd>` : ''}
       <dt>生成</dt><dd>ConceptLab（Richardson et al., 2023）／ ${esc(D.meta.model || '')}</dd>
-      ${D.meta.vlm && D.meta.vlm.length ? `<dt>否定語</dt><dd>${esc(D.meta.vlm.join('、'))} が「これは何か」に答えた語</dd>` : ''}
       <dt>文字</dt><dd>語彙の主成分座標 ${G.COORD_DIMS} 次元を、8 次元ずつ 1 文字に写す規則による</dd>
       <dt>作成</dt><dd>${esc(D.meta.created || '')}</dd>
     </dl>`);
