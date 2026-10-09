@@ -132,7 +132,7 @@
   .specimen .readable .neg { font-family: "EB Garamond", "Shippori Mincho", serif; }
   .specimen .readable .last { margin-top: 1.2mm; }
   .specimen .readable .note { font-size: 7.5pt; color: var(--ink-soft); }
-  .specimen .readable .meta { margin-top: 2mm; font-size: 7.5pt; color: var(--ink-soft); }
+  .specimen .readable .meta { font-size: 7.5pt; color: var(--ink-soft); }
   .specimen .parents { display: inline-flex; gap: 2mm; align-items: center; vertical-align: middle; }
   .specimen .parents svg { height: 3.6mm; width: auto; }
 
@@ -283,9 +283,8 @@
         <div class="desc"><span class="label">記載</span>${desc}</div>
         <div class="readable">
           <div><span class="label">これではないもの</span><span class="neg">${negText}</span></div>
-          ${lastText ? `<div class="last"><span class="label">最後の答え</span><span class="neg">${lastText}</span></div>` : ''}
+          <div class="last">${lastText ? `<span class="label">最後の答え</span><span class="neg">${lastText}</span>　　` : ''}<span class="meta">既知の語からの遠さ ${(s.outlierness ?? s.farness).toFixed(3)}</span></div>
           ${parents}
-          <div class="meta">既知の語からの遠さ ${(s.outlierness ?? s.farness).toFixed(3)}</div>
         </div>`);
     }
   }
