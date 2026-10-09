@@ -57,7 +57,7 @@
   const G = window.Glyphs, D = window.HAKUBUTSUSHI;
   const q = new URLSearchParams(location.search);
   const only = q.get('v');
-  const specs = D.specimens.filter((s) => !s.removed); // 完全版で除いた標本の記録は読み飛ばす
+  const specs = D.specimens.filter((s) => !s.removed); // 除いた標本の記録は読み飛ばす
   const lead = specs.find((s) => String(s.id) === q.get('id')) || specs[0];
   const others = specs.filter((s) => s !== lead);
   const imgOf = (s, k = 0) => (s && s.images && s.images[k] ? `${window.DATA_BASE}${s.images[k]}` : null);
@@ -159,14 +159,13 @@
     cover_pair: () => box4x2(pairCells()) + coverTitle(1528, 180, 672, 912),
     clean_pair: () => box4x2(pairCells()) + `<div class="rule-v" style="left:1528px;top:180px;height:672px"></div>`,
 
-    // 16:9 完全版：各部の最初の 1 体を、上段に銅版画、下段に接写で 5 列に並べる
+    // 16:9 サイトの共有用：各部の最初の 1 体を、上段に銅版画、下段に接写で 5 列に並べる
     cover_parts: () => {
       const firsts = (D.chapters || []).map((ch) => specs.find((s) => s.chapter === ch.key)).filter(Boolean).slice(0, 5);
       const n = firsts.length, cell = 252, gap = 24;
       const cells = [...firsts.map((s) => [s, 0]), ...firsts.map((s) => [s, 3])];
       return cells.map(([s, k], i) => plate(s, 120 + (i % n) * (cell + gap), 252 + Math.floor(i / n) * (cell + gap), cell, cell, k)).join('') +
-        coverTitle(1528, 180, 672, 912) +
-        `<div class="title-en" style="left:120px;top:180px;font-size:22px;font-style:normal;letter-spacing:.5em">完全版</div>`;
+        coverTitle(1528, 180, 672, 912);
     },
 
     // 2:3 縦長キービジュアル：主図版、縦書きの名前、題字
@@ -177,7 +176,7 @@
       `<div class="title-v" style="right:96px;top:860px;font-size:40px">読めない博物誌</div>` +
       `<div class="title-en" style="left:90px;top:1360px;font-size:26px">An Unreadable Natural History</div>`,
   };
-  const sizes = { icon: '1:1  1024×1024（文字なし）', icon_full: '1:1  全面', icon_box: '1:1  標本箱', icon_engraving: '1:1  銅版画の標本箱', icon_titled: '1:1  題字入り（SNS・記事用）', cover_all: '16:9  案B 8体', clean_all: '16:9  案B 文字なし', cover_pair: '16:9  案C 銅版画と接写', cover_parts: '16:9  完全版（各部の 1 体目）', clean_pair: '16:9  案C 文字なし', cover: '16:9  1920×1080 カバーアート', clean: '16:9  1920×1080 文字なし版', poster: '2:3  1000×1500（任意）' };
+  const sizes = { icon: '1:1  1024×1024（文字なし）', icon_full: '1:1  全面', icon_box: '1:1  標本箱', icon_engraving: '1:1  銅版画の標本箱', icon_titled: '1:1  題字入り（SNS・記事用）', cover_all: '16:9  案B 8体', clean_all: '16:9  案B 文字なし', cover_pair: '16:9  案C 銅版画と接写', cover_parts: '16:9  サイトの共有用（各部の 1 体目）', clean_pair: '16:9  案C 文字なし', cover: '16:9  1920×1080 カバーアート', clean: '16:9  1920×1080 文字なし版', poster: '2:3  1000×1500（任意）' };
 
   const root = document.getElementById('sheets');
   if (only) document.body.classList.add('single');
