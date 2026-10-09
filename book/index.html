@@ -44,7 +44,7 @@
   .toolbar a { color: var(--paper); }
   .toolbar .badge { background: #a3482f; padding: 2px 8px; border-radius: 3px; }
   .toolbar .title { letter-spacing: .3em; }
-  @media (max-width: 640px) { .toolbar { gap: 10px; font-size: 12px; flex-wrap: wrap; } .toolbar .print-hint { display: none; } }
+  @media (max-width: 640px) { .toolbar { gap: 10px; font-size: 12px; flex-wrap: wrap; } }
   .book { display: flex; flex-direction: column; align-items: center; gap: 12mm; padding: 12mm 0 24mm; }
   .page {
     position: relative;
@@ -158,10 +158,8 @@
 <body>
 <div class="toolbar">
   <span id="data-state"></span>
-  <a href="2026-10-04/">応募版（2026-10-04・8体）</a>
   <a href="script-lab.html">文字の規則</a>
   <a href="yomenai-hakubutsushi.pdf" id="pdf-link" hidden>PDF</a>
-  <span class="print-hint">印刷：用紙 B5・余白なし・背景を印刷</span>
 </div>
 <main class="book" id="book"></main>
 
