@@ -165,8 +165,8 @@
 </div>
 <main class="book" id="book"></main>
 
-<script src="glyphs.js?v=2026-10-09"></script>
-<script src="data/specimens.js?v=2026-10-09" onerror="this.remove()"></script>
+<script src="glyphs.js?v=2026-10-09c"></script>
+<script src="data/specimens.js?v=2026-10-09c" onerror="this.remove()"></script>
 <script src="mock-data.js"></script>
 <script>
 (function () {
@@ -255,8 +255,10 @@
         const parts = String(n).split(' - ').map((x) => x.trim()).filter(Boolean);
         return parts.length > 3 && parts.every((x) => x === parts[0]) ? parts.slice(0, 3).join(' - ') + ' …' : String(n).trim();
       };
-      const answers = (s.negatives_ja || s.negatives || []).map(tidy);
-      const isJa = !!s.negatives_ja || answers.some((n) => /[^\x00-\x7f]/.test(n));
+      const raw = s.negatives_ja || s.negatives || [];
+      // 言語の判定は縮める前の答えで行う（縮めたときに足す「…」で日本語と誤判定しないため）
+      const isJa = !!s.negatives_ja || raw.some((n) => /[^\x00-\x7f]/.test(n));
+      const answers = raw.map(tidy);
       // ConceptLab は、最後の画像に VLM が答えたところで学習を終える。最後の答えは遠ざける対象にはならず、
       // 完成した姿への答えになる。だから「これではないもの」はそれより前の答えだけで、最後の答えは別に記す
       const negs = answers.length > 1 ? answers.slice(0, -1) : answers;
