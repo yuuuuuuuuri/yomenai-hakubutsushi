@@ -75,7 +75,6 @@
   .cover .book-name svg { width: auto; height: 22mm; margin: 0 auto; }
   .cover h1 { font-weight: 600; font-size: 22pt; letter-spacing: .5em; margin: 22mm 0 4mm; padding-left: .5em; }
   .cover .en { font-family: "EB Garamond", serif; font-style: italic; font-size: 11pt; color: var(--ink-soft); letter-spacing: .08em; }
-  .cover .note { position: absolute; bottom: 24mm; left: 0; right: 0; font-size: 8pt; color: var(--ink-soft); }
 
 
   /* 目次 */
@@ -101,7 +100,6 @@
   .chapter { display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .chapter .genus svg { height: 30mm; width: auto; }
   .chapter h2 { font-weight: 400; font-size: 14pt; letter-spacing: .4em; margin-top: 16mm; }
-  .chapter .caption { font-size: 8pt; color: var(--ink-soft); margin-top: 2mm; }
 
   /* 標本頁 */
   .specimen header {
@@ -140,8 +138,7 @@
   .specimen .parents svg { height: 3.6mm; width: auto; }
 
   /* 付録：手がかり */
-  .rosetta h2 { font-weight: 400; font-size: 13pt; letter-spacing: .4em; margin: 6mm 0 2mm; }
-  .rosetta .caption { font-size: 8pt; color: var(--ink-soft); margin-bottom: 8mm; line-height: 1.8; }
+  .rosetta h2 { font-weight: 400; font-size: 13pt; letter-spacing: .4em; margin: 6mm 0 8mm; }
   .rosetta table { width: 100%; border-collapse: collapse; }
   .rosetta td { border-bottom: 0.25mm solid var(--rule); padding: 3.2mm 0; vertical-align: middle; }
   .rosetta td.word { font-family: "EB Garamond", serif; font-size: 11pt; width: 40mm; }
@@ -207,8 +204,7 @@
   page('cover', `
     <div class="book-name">${G.nameSVG(G.nameFromCoords(centroid, 3), { size: 60 })}</div>
     <h1>読めない博物誌</h1>
-    <div class="en">An Unreadable Natural History</div>
-    <div class="note">表題の文字列は、本書に収めた ${SPEC.length} 体の座標の重心を書き表したもの</div>`);
+    <div class="en">An Unreadable Natural History</div>`);
 
   page('preface', `
     <div class="vtext">
@@ -241,8 +237,7 @@
     genusOnly.species = [];
     page('chapter', `
       <div class="genus">${G.nameSVG(genusOnly, { size: 60 })}</div>
-      <h2>${esc(ch.title)}</h2>
-      <div class="caption">この部の ${members.length} 体に共通する属名（座標の重心）</div>`);
+      <h2>${esc(ch.title)}</h2>`);
 
     for (const s of members) {
       const [main, ...subs] = s.images || [];
@@ -298,8 +293,6 @@
 
   page('rosetta', `
     <h2>手がかり</h2>
-    <div class="caption">既知の語を、同じ規則で書き表したもの。既知の語は語彙の空間そのものの上にあるため、種名は一文字になる。<br>
-      本文「記載」の欄には、各標本にもっとも近い既知の語（部の名前に使った語を除く）が、この文字で記されている。</div>
     <table>${D.rosetta.map((w) => `<tr><td class="word">${esc(w.word)}</td><td>${G.nameSVG(wordName(w), { size: 40, gap: 0.3 })}</td></tr>`).join('')}</table>`);
 
   // 画面幅が頁より狭いときは、頁ごと縮小して見せる
