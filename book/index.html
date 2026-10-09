@@ -130,15 +130,15 @@
   }
   .specimen .readable { margin-top: 6mm; font-size: 8.5pt; line-height: 1.9; }
   .specimen .readable .neg { font-family: "EB Garamond", "Shippori Mincho", serif; }
-  .specimen .readable .last, .specimen .readable .syn { margin-top: 1.2mm; }
-  .specimen .readable .syn .parents { margin-left: 1mm; }
+  .specimen .readable .last { margin-top: 1.2mm; }
   .specimen .readable .note { font-size: 7.5pt; color: var(--ink-soft); }
   .specimen .readable .meta { margin-top: 2mm; font-size: 7.5pt; color: var(--ink-soft); }
   .specimen .parents { display: inline-flex; gap: 2mm; align-items: center; vertical-align: middle; }
   .specimen .parents svg { height: 3.6mm; width: auto; }
 
   /* 付録：手がかり */
-  .rosetta h2 { font-weight: 400; font-size: 13pt; letter-spacing: .4em; margin: 6mm 0 8mm; }
+  .rosetta h2 { font-weight: 400; font-size: 13pt; letter-spacing: .4em; margin: 6mm 0 2mm; }
+  .rosetta .caption { font-size: 8pt; color: var(--ink-soft); margin-bottom: 8mm; line-height: 1.8; }
   .rosetta table { width: 100%; border-collapse: collapse; }
   .rosetta td { border-bottom: 0.25mm solid var(--rule); padding: 3.2mm 0; vertical-align: middle; }
   .rosetta td.word { font-family: "EB Garamond", serif; font-size: 11pt; width: 40mm; }
@@ -285,7 +285,6 @@
           <div><span class="label">これではないもの</span><span class="neg">${negText}</span></div>
           ${lastText ? `<div class="last"><span class="label">最後の答え</span><span class="neg">${lastText}</span><span class="note">　この答えから遠ざけられる前に、探索は終わった。</span></div>` : ''}
           ${parents}
-          ${s.synonym ? `<div class="syn"><span class="label">旧名</span><span class="parents">${G.nameSVG(G.nameFromCoords(s.synonym.coords, G.speciesLengthFor(s.synonym.farness)), { size: 40 })}</span><span class="note">　${esc(s.synonym.edition)}（${esc(s.synonym.date)}）での名前${s.id !== NO.get(s.id) ? `（応募版では No.${pad3(s.id)}）` : ''}。この版で文字体系の軸を改めた</span></div>` : ''}
           <div class="meta">既知の語からの遠さ ${(s.outlierness ?? s.farness).toFixed(3)}${s.seed !== undefined ? `　／　seed ${s.seed}` : ''}</div>
         </div>`);
     }
@@ -293,6 +292,8 @@
 
   page('rosetta', `
     <h2>手がかり</h2>
+    <div class="caption">既知の語を、同じ規則で書き表したもの。既知の語は語彙の空間そのものの上にあるため、種名は一文字になる。<br>
+      本文「記載」の欄には、各標本にもっとも近い既知の語（部の名前に使った語を除く）が、この文字で記されている。</div>
     <table>${D.rosetta.map((w) => `<tr><td class="word">${esc(w.word)}</td><td>${G.nameSVG(wordName(w), { size: 40, gap: 0.3 })}</td></tr>`).join('')}</table>`);
 
   // 画面幅が頁より狭いときは、頁ごと縮小して見せる
@@ -306,7 +307,7 @@
   page('colophon', `
     <dl>
       <dt>書名</dt><dd>読めない博物誌</dd>
-      <dt>版</dt><dd>第二部以降を書き足し、文字体系の軸を乱数を用いない固有値分解で求め直して、全 ${SPEC.length} 体の名前を改めた。応募版（2026-10-04）に収めた標本には、応募版での名前を旧名として併記した</dd>
+      <dt>版</dt><dd>第二部以降を書き足し、文字体系の軸を乱数を用いない固有値分解で求め直して、全 ${SPEC.length} 体の名前を改めた</dd>
       <dt>標本</dt><dd>${SPEC.length} 体</dd>
       ${EXCLUDED.length ? `<dt>除いた標本</dt><dd>${EXCLUDED.map((s) => `応募版の No.${pad3(s.id)}（${esc(s.reason || '')}）`).join('、')}は収めず、以降の番号を繰り上げた</dd>` : ''}
       <dt>生成</dt><dd>ConceptLab（Richardson et al., 2023）／ ${esc(D.meta.model || '')}</dd>
