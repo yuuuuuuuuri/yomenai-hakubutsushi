@@ -283,9 +283,9 @@
         <div class="desc"><span class="label">記載</span>${desc}</div>
         <div class="readable">
           <div><span class="label">これではないもの</span><span class="neg">${negText}</span></div>
-          ${lastText ? `<div class="last"><span class="label">最後の答え</span><span class="neg">${lastText}</span><span class="note">　この答えから遠ざけられる前に、探索は終わった。</span></div>` : ''}
+          ${lastText ? `<div class="last"><span class="label">最後の答え</span><span class="neg">${lastText}</span></div>` : ''}
           ${parents}
-          <div class="meta">既知の語からの遠さ ${(s.outlierness ?? s.farness).toFixed(3)}${s.seed !== undefined ? `　／　seed ${s.seed}` : ''}</div>
+          <div class="meta">既知の語からの遠さ ${(s.outlierness ?? s.farness).toFixed(3)}</div>
         </div>`);
     }
   }
