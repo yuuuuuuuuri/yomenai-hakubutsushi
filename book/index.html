@@ -94,7 +94,9 @@
   }
   .preface .vtext h2 { font-size: 14pt; font-weight: 600; margin: 0 0 0 10mm; letter-spacing: .4em; }
   .preface .vtext p { margin: 0 0 0 4mm; }
-  .tcy { text-combine-upright: all; }
+  /* 縦書きの中の「AI」：縦中横は字幅の広い欧文で中心からずれるため、1 字分の箱に横書きで入れて中央に置く。
+     -0.06em は Shippori Mincho の A・I の左右の余白の差の補正（画素を数えて中心とのずれ 0 を確認） */
+  .tcy { display: inline-block; writing-mode: horizontal-tb; width: 1em; text-align: center; letter-spacing: 0; font-size: .85em; line-height: 1; position: relative; left: -.06em; }
 
   /* 部扉 */
   .chapter { display: flex; flex-direction: column; align-items: center; justify-content: center; }
