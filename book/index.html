@@ -53,6 +53,7 @@
     background: var(--paper);
     box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 8px 24px rgba(0,0,0,.12);
     overflow: hidden;
+    scroll-margin-top: 56px; /* 上の帯に隠れないように */
   }
   @media print {
     body { background: none; }
@@ -146,6 +147,16 @@
   .rosetta td.word { font-family: "EB Garamond", serif; font-size: 11pt; width: 40mm; }
   .rosetta td svg { height: 7mm; width: auto; }
 
+  /* 付録：文字の規則 */
+  .rules h2 { font-weight: 400; font-size: 13pt; letter-spacing: .4em; margin: 6mm 0 2mm; }
+  .rules h3 { font-weight: 600; font-size: 9.5pt; letter-spacing: .12em; margin: 7mm 0 1mm; }
+  .rules .caption { font-size: 8pt; color: var(--ink-soft); line-height: 1.8; margin-bottom: 3mm; }
+  .rules .glyph-grid { display: grid; grid-template-columns: repeat(16, 1fr); gap: 2mm; }
+  .rules .glyph-grid svg { width: 100%; height: auto; }
+  .rules .row { display: flex; align-items: center; gap: 4mm; padding: 1mm 0; border-bottom: 0.25mm solid var(--rule); }
+  .rules .row .k { width: 18mm; flex: none; font-family: "EB Garamond", "Shippori Mincho", serif; font-size: 8pt; color: var(--ink-soft); }
+  .rules .row svg { height: 5.6mm; width: auto; }
+
   /* 奥付 */
   .colophon { display: flex; flex-direction: column; justify-content: flex-end; }
   .colophon dl { display: grid; grid-template-columns: 26mm 1fr; gap: 2mm 4mm; font-size: 8pt; line-height: 1.7; border-top: 0.25mm solid var(--rule); padding-top: 5mm; margin-bottom: 20mm; }
@@ -156,7 +167,7 @@
 <body>
 <div class="toolbar">
   <span id="data-state"></span>
-  <a href="script-lab.html">文字の規則</a>
+  <a href="#rules">文字の規則</a>
   <a href="yomenai-hakubutsushi.pdf" id="pdf-link" hidden>PDF</a>
 </div>
 <main class="book" id="book"></main>
@@ -198,6 +209,7 @@
     el.innerHTML = html + (D.mock ? '<div class="mock-stamp">試作データ</div>' : '')
       + (cls === 'cover' ? '' : `<div class="folio">${folio}</div>`);
     book.appendChild(el);
+    return el;
   }
 
   // 表紙：この本の名前は、収められた全標本の座標の重心から書かれる
@@ -221,6 +233,7 @@
   const parts = D.chapters
     .map((ch) => ({ ch, members: SPEC.filter((s) => s.chapter === ch.key) }))
     .filter((p) => p.members.length);
+  const RULES_PAGES = 2; // 付録「文字の規則」の頁数
   let pg = folio + 2; // folio は序まで。次の目次の、さらに次の頁から数える
   const tocRows = [];
   for (const { ch, members } of parts) {
@@ -230,6 +243,8 @@
     }
   }
   tocRows.push(`<div class="toc-ch"><span>手がかり</span><span class="pg">${pg++}</span></div>`);
+  tocRows.push(`<div class="toc-ch"><span>文字の規則</span><span class="pg">${pg}</span></div>`);
+  pg += RULES_PAGES;
   tocRows.push(`<div class="toc-ch"><span>奥付</span><span class="pg">${pg++}</span></div>`);
   page('contents', `<h2>目次</h2>${tocRows.join('')}`);
 
@@ -295,6 +310,43 @@
     <div class="caption">既知の語を、同じ規則で書き表したもの。既知の語は語彙の空間そのものの上にあるため、種名は一文字になる。<br>
       本文「記載」の欄には、各標本にもっとも近い既知の語（部の名前に使った語を除く）が、この文字で記されている。</div>
     <table>${D.rosetta.map((w) => `<tr><td class="word">${esc(w.word)}</td><td>${G.nameSVG(wordName(w), { size: 40, gap: 0.3 })}</td></tr>`).join('')}</table>`);
+
+  // 付録：文字の規則。座標は規則を見せるための乱数（種 42）で、収録した標本のものではない。
+  // 乱数を引く順番は、以前の別ページ（script-lab.html）と同じなので、同じ字が並ぶ
+  {
+    const rng = G.mulberry32(42);
+    const randn = (n, s = 1) => Array.from({ length: n }, () => G.gaussian(rng) * s);
+    const row = (k, name) => `<div class="row"><span class="k">${k}</span>${G.nameSVG(name, { size: 40 })}</div>`;
+    const sampler = Array.from({ length: 96 }, () =>
+      `<svg viewBox="0 0 56 56">${G.glyphSVG(G.glyphFromChunk(randn(8)), 0, 0, 56, 'currentColor')}</svg>`).join('');
+    const A = randn(G.COORD_DIMS), B = randn(G.COORD_DIMS);
+    const lerp = (t) => A.map((a, i) => a * (1 - t) + B[i] * t);
+    const interp = Array.from({ length: 11 }, (_, i) => i / 10)
+      .map((t) => row(t === 0 ? 'A' : t === 1 ? 'B' : t.toFixed(1), G.nameFromCoords(lerp(t), 4))).join('');
+    const base = randn(G.COORD_DIMS);
+    const family = [0, 0.05, 0.15, 0.3, 0.6, 1.0, 2.0]
+      .map((s) => row(s === 0 ? '基準' : `揺らぎ ${s}`, G.nameFromCoords(base.map((v) => v + G.gaussian(rng) * s), 3))).join('');
+    const lengths = [['既知の語', null], ['遠さ 0.0', 0], ['遠さ 0.4', 0.4], ['遠さ 0.7', 0.7], ['遠さ 1.0', 1]]
+      .map(([k, f]) => row(k, G.nameFromCoords(randn(G.COORD_DIMS), f === null ? 1 : G.speciesLengthFor(f)))).join('');
+
+    page('rules', `
+      <h2>文字の規則</h2>
+      <div class="caption">1 文字は、語彙の空間における座標の 8 次元ぶんを受け持つ。名前は属名 2 文字（主成分 1–16）と種名（主成分 17–56）からなり、属名は大まかな位置を、種名は細かな位置を書き表す。<br>
+        この頁と次の頁に並べた文字の座標は、規則を見せるために乱数で与えたもので、収録した標本のものではない。</div>
+      <h3>一　字形見本</h3>
+      <div class="caption">8 次元の座標を乱数で与えたときに現れる文字。</div>
+      <div class="glyph-grid">${sampler}</div>
+      <h3>二　連続性：座標を動かすと、名前もなめらかに変わる</h3>
+      <div class="caption">二つの座標 A と B を直線で結び、その途中の地点の名前を書いた。字は急に切り替わらず、少しずつ形を移していく。</div>
+      ${interp}`).id = 'rules';
+    page('rules', `
+      <h3>三　近縁：距離が離れるほど、名前は似なくなる</h3>
+      <div class="caption">基準の座標に、だんだん大きな揺らぎを加えた。近い個体は字形を共有し、遠い個体ほど別の名前になる。</div>
+      ${family}
+      <h3>四　名前の長さ：既知から遠いほど長い</h3>
+      <div class="caption">既知の語（語彙の空間の上にある点）は種名 1 文字。未知の生きものは、既知からの遠さに応じて種名 2–5 文字。</div>
+      ${lengths}`);
+  }
 
   // 画面幅が頁より狭いときは、頁ごと縮小して見せる
   const PAGE_PX = (182 * 96) / 25.4; // B5 の幅（CSS px）

@@ -36,7 +36,7 @@ yomenai-hakubutsushi/
 │   ├── index.html        図鑑の最新版（完全版：5 部・23 体）。B5・印刷用
 │   ├── data/             最新版のデータ（specimens.js と images/）
 │   ├── yomenai-hakubutsushi.pdf  最新版の PDF
-│   ├── script-lab.html   文字の規則が連続性・近縁性を満たすかの検証ページ
+│   ├── script-lab.html   旧「文字の規則」ページ。図鑑巻末の「文字の規則」へ転送する
 │   ├── glyphs.js         座標 → 文字 の規則
 │   └── 2026-10-04/       応募時点の版（第一部 8 体）。記録として残す
 ├── entry/visuals.html    応募画像・共有用カバーのテンプレート
