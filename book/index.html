@@ -140,15 +140,10 @@
   .specimen .name-v svg { width: 13mm; height: auto; }
   .specimen .sub-plates { display: flex; gap: 3mm; margin-top: 3mm; }
   .specimen .sub-plates img { width: 36mm; height: 36mm; object-fit: cover; border: 0.25mm solid var(--rule); mix-blend-mode: multiply; }
-  .specimen .desc {
-    margin-top: 6mm; display: flex; flex-wrap: wrap; gap: 2.6mm 4.2mm; align-items: center;
-    padding-top: 4mm; border-top: 0.25mm solid var(--rule);
-  }
-  .specimen .desc svg { height: 4.6mm; width: auto; }
-  .specimen .desc .label, .specimen .readable .label {
+  .specimen .readable .label {
     font-size: 7pt; color: var(--ink-soft); letter-spacing: .3em; margin-right: 2mm;
   }
-  .specimen .readable { margin-top: 6mm; font-size: 8.5pt; line-height: 1.9; }
+  .specimen .readable { margin-top: 6mm; padding-top: 4mm; border-top: 0.25mm solid var(--rule); font-size: 8.5pt; line-height: 1.9; }
   .specimen .readable .neg { font-family: "EB Garamond", "Shippori Mincho", serif; }
   .specimen .readable .last { margin-top: 1.2mm; }
   .specimen .readable .note { font-size: 7.5pt; color: var(--ink-soft); }
@@ -275,10 +270,6 @@
         ? negs.map((n) => `${esc(n)}ではない。`).join('')
         : negs.map((n) => `Not ${article(n)}${esc(n)}${n.endsWith('…') ? '' : '.'}`).join(' ');
     const lastText = last && (isJa ? `「${esc(last)}」` : `“${article(last)}${esc(last)}”`);
-    // 部の名前に使ったカテゴリ語は、どの標本でも最も近い語になるので記載からは外す
-    const stop = new Set([ch.key, ch.key + 's', ch.key + 'es']);
-    const desc = (s.neighbors || []).filter((w) => !stop.has(w.word))
-      .map((w) => G.nameSVG(wordName(w), { size: 40, gap: 0.3 })).join('');
     const parents = s.parents
       ? `<div>両親　<span class="parents">No.${pad3(NO.get(s.parents[0]))} ${G.nameSVG(nameOf(byId[s.parents[0]]), { size: 40 })}</span>
            ×　<span class="parents">No.${pad3(NO.get(s.parents[1]))} ${G.nameSVG(nameOf(byId[s.parents[1]]), { size: 40 })}</span></div>`
@@ -292,10 +283,9 @@
         </div>
         <div class="name-v">${mark(2)}${G.nameSVG(nameOf(s), { size: 60, vertical: true, gap: 0.45 })}</div>
       </div>
-      <div class="desc">${mark(3)}<span class="label">記載</span>${desc}</div>
       <div class="readable">
-        <div>${mark(4)}<span class="label">これではないもの</span><span class="neg">${negText}</span></div>
-        <div class="last">${lastText ? `${mark(5)}<span class="label">最後の答え</span><span class="neg">${lastText}</span>　　` : ''}${mark(6)}<span class="meta">既知の語からの遠さ ${(s.outlierness ?? s.farness).toFixed(3)}</span></div>
+        <div>${mark(3)}<span class="label">これではないもの</span><span class="neg">${negText}</span></div>
+        <div class="last">${lastText ? `${mark(4)}<span class="label">最後の答え</span><span class="neg">${lastText}</span>　　` : ''}${mark(5)}<span class="meta">既知の語からの遠さ ${(s.outlierness ?? s.farness).toFixed(3)}</span></div>
         ${parents}
       </div>`;
   }
@@ -323,7 +313,6 @@
     const items = [
       ['図版', 'AI の潜在空間のなかで、既存のどの生きものにも似ないように探された生きもの。'],
       ['名前', '語彙の空間におけるこの生きものの位置を、ひとつの規則で文字にしたもの。似た生きものは字を共有し、既知の語から遠いほど種名は長い。'],
-      ['記載', '語彙の空間で、この生きものにもっとも近い既知の語を、同じ文字で書いたもの。'],
       ['これではないもの', '生成の途中で、AI がこの生きものを見て答えた名前。生きものは、その答えから遠ざかるように姿を変えた。'],
       ['最後の答え', '探索を終えた姿に、AI が返した答え。'],
       ['既知の語からの遠さ', '語彙の空間で、もっとも近い既知の語からどれだけ離れているか。数が大きいほど、言葉の外にいる。'],
@@ -381,8 +370,7 @@
 
   page('rosetta', `
     <h2>手がかり</h2>
-    <div class="caption">既知の語を、同じ規則で書き表したもの。既知の語は語彙の空間そのものの上にあるため、種名は一文字になる。<br>
-      本文「記載」の欄には、各標本にもっとも近い既知の語が、この文字で記されている。</div>
+    <div class="caption">既知の語を、同じ規則で書き表したもの。既知の語は語彙の空間そのものの上にあるため、種名は一文字になる。</div>
     <table>${D.rosetta.map((w) => `<tr><td class="word">${esc(w.word)}</td><td>${G.nameSVG(wordName(w), { size: 40, gap: 0.3 })}</td></tr>`).join('')}</table>`);
 
   // 画面幅が頁より狭いときは、頁ごと縮小して見せる
