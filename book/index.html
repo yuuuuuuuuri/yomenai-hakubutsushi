@@ -99,6 +99,23 @@
      -0.06em は Shippori Mincho の A・I の左右の余白の差の補正（画素を数えて中心とのずれ 0 を確認） */
   .tcy { display: inline-block; writing-mode: horizontal-tb; width: 1em; text-align: center; letter-spacing: 0; font-size: .85em; line-height: 1; position: relative; left: -.06em; }
 
+  /* 凡例：この図鑑の見かた */
+  .legend h2 { font-weight: 400; font-size: 13pt; letter-spacing: .4em; margin: 2mm 0 4mm; }
+  .legend .mini { width: 91mm; height: 128.5mm; margin: 0 auto; overflow: hidden; border: 0.25mm solid var(--rule); }
+  .legend .mini-sheet { position: relative; width: 182mm; height: 257mm; padding: var(--margin); background: var(--paper); transform: scale(.5); transform-origin: 0 0; }
+  .legend dl { display: grid; grid-template-columns: max-content 1fr; gap: 1.6mm 5mm; margin: 6mm 0 0; font-size: 8pt; line-height: 1.7; }
+  .legend dt { white-space: nowrap; letter-spacing: .05em; }
+  .legend dd { margin: 0; color: var(--ink-soft); }
+  .mark {
+    display: inline-flex; align-items: center; justify-content: center; vertical-align: .1em;
+    width: 1.5em; height: 1.5em; margin-right: .6em; border-radius: 50%;
+    background: #a3482f; color: #fff; font-family: "EB Garamond", serif; font-size: 1em; line-height: 1;
+  }
+  .mini-sheet .mark { font-size: 15pt; }
+  .mini-sheet .plate, .mini-sheet .name-v { position: relative; }
+  .mini-sheet .plate .mark, .mini-sheet .name-v .mark { position: absolute; top: 2mm; left: 2mm; z-index: 1; }
+  .mini-sheet .name-v .mark { top: 0; left: calc(50% - 17mm); } /* 縦書きの名前（幅 13mm、中央寄せ）の左上 */
+
   /* 部扉 */
   .chapter { display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .chapter .genus svg { height: 30mm; width: auto; }
@@ -232,9 +249,61 @@
   const parts = D.chapters
     .map((ch) => ({ ch, members: SPEC.filter((s) => s.chapter === ch.key) }))
     .filter((p) => p.members.length);
+
+  // 標本の頁の中身。凡例の頁では、同じ頁を縮小し、欄ごとに番号札（mark）をつけて見せる
+  function specimenHTML(s, ch, mark = () => '') {
+    const [main, ...subs] = s.images || [];
+    // VLM は同じ語を延々と繰り返す答えを返すことがある（例："fish - fish - fish - …"）。言い淀みとして残し、3 回までに縮める
+    const tidy = (n) => {
+      const parts = String(n).split(' - ').map((x) => x.trim()).filter(Boolean);
+      return parts.length > 3 && parts.every((x) => x === parts[0]) ? parts.slice(0, 3).join(' - ') + ' …' : String(n).trim();
+    };
+    const raw = s.negatives_ja || s.negatives || [];
+    // 言語の判定は縮める前の答えで行う（縮めたときに足す「…」で日本語と誤判定しないため）
+    const isJa = !!s.negatives_ja || raw.some((n) => /[^\x00-\x7f]/.test(n));
+    const answers = raw.map(tidy);
+    // ConceptLab は、最後の画像に VLM が答えたところで学習を終える。最後の答えは遠ざける対象にはならず、
+    // 完成した姿への答えになる。だから「これではないもの」はそれより前の答えだけで、最後の答えは別に記す
+    const negs = answers.length > 1 ? answers.slice(0, -1) : answers;
+    const last = answers.length > 1 ? answers[answers.length - 1] : null;
+    // VLM の答えは冠詞なしの名詞（ConceptLab が先頭の "a " を外している）なので、a / an を補う
+    const article = (n) => (/^(a|an|the)\s/i.test(n) ? '' : /^[aeiou]/i.test(n) ? 'an ' : 'a ');
+    // 交配種は VLM に問われていないので、両親のどちらでもないことだけが書ける
+    const negText = !negs.length && s.parents
+      ? `No.${pad3(NO.get(s.parents[0]))} でも No.${pad3(NO.get(s.parents[1]))} でもない。`
+      : isJa
+        ? negs.map((n) => `${esc(n)}ではない。`).join('')
+        : negs.map((n) => `Not ${article(n)}${esc(n)}${n.endsWith('…') ? '' : '.'}`).join(' ');
+    const lastText = last && (isJa ? `「${esc(last)}」` : `“${article(last)}${esc(last)}”`);
+    // 部の名前に使ったカテゴリ語は、どの標本でも最も近い語になるので記載からは外す
+    const stop = new Set([ch.key, ch.key + 's', ch.key + 'es']);
+    const desc = (s.neighbors || []).filter((w) => !stop.has(w.word))
+      .map((w) => G.nameSVG(wordName(w), { size: 40, gap: 0.3 })).join('');
+    const parents = s.parents
+      ? `<div>両親　<span class="parents">No.${pad3(NO.get(s.parents[0]))} ${G.nameSVG(nameOf(byId[s.parents[0]]), { size: 40 })}</span>
+           ×　<span class="parents">No.${pad3(NO.get(s.parents[1]))} ${G.nameSVG(nameOf(byId[s.parents[1]]), { size: 40 })}</span></div>`
+      : '';
+    return `
+      <header><span class="no">No. ${pad3(NO.get(s.id))}</span><span>${esc(ch.title)}</span></header>
+      <div class="main">
+        <div>
+          <div class="plate">${mark(1)}${main ? `<img src="data/${esc(main)}" alt="">` : '図　版'}</div>
+          ${subs.length ? `<div class="sub-plates">${subs.slice(0, 3).map((p) => `<img src="data/${esc(p)}" alt="">`).join('')}</div>` : ''}
+        </div>
+        <div class="name-v">${mark(2)}${G.nameSVG(nameOf(s), { size: 60, vertical: true, gap: 0.45 })}</div>
+      </div>
+      <div class="desc">${mark(3)}<span class="label">記載</span>${desc}</div>
+      <div class="readable">
+        <div>${mark(4)}<span class="label">これではないもの</span><span class="neg">${negText}</span></div>
+        <div class="last">${lastText ? `${mark(5)}<span class="label">最後の答え</span><span class="neg">${lastText}</span>　　` : ''}${mark(6)}<span class="meta">既知の語からの遠さ ${(s.outlierness ?? s.farness).toFixed(3)}</span></div>
+        ${parents}
+      </div>`;
+  }
+
   const RULES_PAGES = 2; // 付録「文字の規則」の頁数
   let pg = folio + 2; // folio は序まで。次の目次の、さらに次の頁から数える
   const tocRows = [];
+  tocRows.push(`<div class="toc-ch"><span>この図鑑の見かた</span><span class="pg">${pg++}</span></div>`);
   for (const { ch, members } of parts) {
     tocRows.push(`<div class="toc-ch"><span>${esc(ch.title)}</span><span class="pg">${pg++}</span></div>`);
     for (const s of members) {
@@ -247,61 +316,31 @@
   tocRows.push(`<div class="toc-ch"><span>奥付</span><span class="pg">${pg++}</span></div>`);
   page('contents', `<h2>目次</h2>${tocRows.join('')}`);
 
+  // 凡例：最初の標本の頁を縮小して、欄ごとに番号をつける
+  {
+    const { ch, members } = parts[0];
+    const mark = (n) => `<span class="mark">${n}</span>`;
+    const items = [
+      ['図版', 'AI の潜在空間のなかで、既存のどの生きものにも似ないように探された生きもの。下の小さな三枚は、同じ生きものを別の描き方で描いたもの。'],
+      ['名前', '語彙の空間におけるこの生きものの位置を、ひとつの規則で文字にしたもの。上の二文字が属名、間をあけた下の文字が種名。似た生きものは字を共有し、既知の語から遠いほど種名は長い。'],
+      ['記載', '語彙の空間で、この生きものにもっとも近い既知の語を、同じ文字で書いたもの。巻末の「手がかり」と見比べると、一部は読める。'],
+      ['これではないもの', '生成の途中で、AI がこの生きものを見て答えた名前。生きものは、その答えから遠ざかるように姿を変えた。'],
+      ['最後の答え', '探索を終えた姿に、AI が返した答え。'],
+      ['既知の語からの遠さ', '語彙の空間で、もっとも近い既知の語からどれだけ離れているか。数が大きいほど、言葉の外にいる。'],
+    ];
+    page('legend', `
+      <h2>この図鑑の見かた</h2>
+      <div class="mini"><div class="mini-sheet specimen">${specimenHTML(members[0], ch, mark)}</div></div>
+      <dl>${items.map(([k, v], i) => `<dt>${mark(i + 1)}${k}</dt><dd>${v}</dd>`).join('')}</dl>`);
+  }
+
   for (const { ch, members } of parts) {
     const genusOnly = G.nameFromCoords(mean(members.map((s) => s.coords)), 1);
     genusOnly.species = [];
     page('chapter', `
       <div class="genus">${G.nameSVG(genusOnly, { size: 60 })}</div>
       <h2>${esc(ch.title)}</h2>`);
-
-    for (const s of members) {
-      const [main, ...subs] = s.images || [];
-      // VLM は同じ語を延々と繰り返す答えを返すことがある（例："fish - fish - fish - …"）。言い淀みとして残し、3 回までに縮める
-      const tidy = (n) => {
-        const parts = String(n).split(' - ').map((x) => x.trim()).filter(Boolean);
-        return parts.length > 3 && parts.every((x) => x === parts[0]) ? parts.slice(0, 3).join(' - ') + ' …' : String(n).trim();
-      };
-      const raw = s.negatives_ja || s.negatives || [];
-      // 言語の判定は縮める前の答えで行う（縮めたときに足す「…」で日本語と誤判定しないため）
-      const isJa = !!s.negatives_ja || raw.some((n) => /[^\x00-\x7f]/.test(n));
-      const answers = raw.map(tidy);
-      // ConceptLab は、最後の画像に VLM が答えたところで学習を終える。最後の答えは遠ざける対象にはならず、
-      // 完成した姿への答えになる。だから「これではないもの」はそれより前の答えだけで、最後の答えは別に記す
-      const negs = answers.length > 1 ? answers.slice(0, -1) : answers;
-      const last = answers.length > 1 ? answers[answers.length - 1] : null;
-      // VLM の答えは冠詞なしの名詞（ConceptLab が先頭の "a " を外している）なので、a / an を補う
-      const article = (n) => (/^(a|an|the)\s/i.test(n) ? '' : /^[aeiou]/i.test(n) ? 'an ' : 'a ');
-      // 交配種は VLM に問われていないので、両親のどちらでもないことだけが書ける
-      const negText = !negs.length && s.parents
-        ? `No.${pad3(NO.get(s.parents[0]))} でも No.${pad3(NO.get(s.parents[1]))} でもない。`
-        : isJa
-          ? negs.map((n) => `${esc(n)}ではない。`).join('')
-          : negs.map((n) => `Not ${article(n)}${esc(n)}${n.endsWith('…') ? '' : '.'}`).join(' ');
-      const lastText = last && (isJa ? `「${esc(last)}」` : `“${article(last)}${esc(last)}”`);
-      // 部の名前に使ったカテゴリ語は、どの標本でも最も近い語になるので記載からは外す
-      const stop = new Set([ch.key, ch.key + 's', ch.key + 'es']);
-      const desc = (s.neighbors || []).filter((w) => !stop.has(w.word))
-        .map((w) => G.nameSVG(wordName(w), { size: 40, gap: 0.3 })).join('');
-      const parents = s.parents
-        ? `<div>両親　<span class="parents">No.${pad3(NO.get(s.parents[0]))} ${G.nameSVG(nameOf(byId[s.parents[0]]), { size: 40 })}</span>
-             ×　<span class="parents">No.${pad3(NO.get(s.parents[1]))} ${G.nameSVG(nameOf(byId[s.parents[1]]), { size: 40 })}</span></div>`
-        : '';
-      page('specimen', `
-        <header><span class="no">No. ${pad3(NO.get(s.id))}</span><span>${esc(ch.title)}</span></header>
-        <div class="main">
-          <div>
-            <div class="plate">${main ? `<img src="data/${esc(main)}" alt="">` : '図　版'}</div>
-            ${subs.length ? `<div class="sub-plates">${subs.slice(0, 3).map((p) => `<img src="data/${esc(p)}" alt="">`).join('')}</div>` : ''}
-          </div>
-          <div class="name-v">${G.nameSVG(nameOf(s), { size: 60, vertical: true, gap: 0.45 })}</div>
-        </div>
-        <div class="desc"><span class="label">記載</span>${desc}</div>
-        <div class="readable">
-          <div><span class="label">これではないもの</span><span class="neg">${negText}</span></div>
-          <div class="last">${lastText ? `<span class="label">最後の答え</span><span class="neg">${lastText}</span>　　` : ''}<span class="meta">既知の語からの遠さ ${(s.outlierness ?? s.farness).toFixed(3)}</span></div>
-          ${parents}
-        </div>`);
-    }
+    for (const s of members) page('specimen', specimenHTML(s, ch));
   }
 
   // 付録：文字の規則。座標は規則を見せるための乱数（種 42）で、収録した標本のものではない。
