@@ -241,9 +241,9 @@
       tocRows.push(`<div class="toc-sp"><span class="no">No.${pad3(NO.get(s.id))}</span><span class="nm">${G.nameSVG(nameOf(s), { size: 40, gap: 0.45 })}</span><span class="pg">${pg++}</span></div>`);
     }
   }
-  tocRows.push(`<div class="toc-ch"><span>手がかり</span><span class="pg">${pg++}</span></div>`);
   tocRows.push(`<div class="toc-ch"><span>文字の規則</span><span class="pg">${pg}</span></div>`);
   pg += RULES_PAGES;
+  tocRows.push(`<div class="toc-ch"><span>手がかり</span><span class="pg">${pg++}</span></div>`);
   tocRows.push(`<div class="toc-ch"><span>奥付</span><span class="pg">${pg++}</span></div>`);
   page('contents', `<h2>目次</h2>${tocRows.join('')}`);
 
@@ -304,12 +304,6 @@
     }
   }
 
-  page('rosetta', `
-    <h2>手がかり</h2>
-    <div class="caption">既知の語を、同じ規則で書き表したもの。既知の語は語彙の空間そのものの上にあるため、種名は一文字になる。<br>
-      本文「記載」の欄には、各標本にもっとも近い既知の語が、この文字で記されている。</div>
-    <table>${D.rosetta.map((w) => `<tr><td class="word">${esc(w.word)}</td><td>${G.nameSVG(wordName(w), { size: 40, gap: 0.3 })}</td></tr>`).join('')}</table>`);
-
   // 付録：文字の規則。座標は規則を見せるための乱数（種 42）で、収録した標本のものではない。
   // 乱数を引く順番は、以前の別ページ（script-lab.html）と同じなので、同じ字が並ぶ
   {
@@ -346,6 +340,12 @@
       <div class="caption">既知の語（語彙の空間の上にある点）は種名 1 文字。未知の生きものは、既知からの遠さに応じて種名 2–5 文字。</div>
       ${lengths}`);
   }
+
+  page('rosetta', `
+    <h2>手がかり</h2>
+    <div class="caption">既知の語を、同じ規則で書き表したもの。既知の語は語彙の空間そのものの上にあるため、種名は一文字になる。<br>
+      本文「記載」の欄には、各標本にもっとも近い既知の語が、この文字で記されている。</div>
+    <table>${D.rosetta.map((w) => `<tr><td class="word">${esc(w.word)}</td><td>${G.nameSVG(wordName(w), { size: 40, gap: 0.3 })}</td></tr>`).join('')}</table>`);
 
   // 画面幅が頁より狭いときは、頁ごと縮小して見せる
   const PAGE_PX = (182 * 96) / 25.4; // B5 の幅（CSS px）
