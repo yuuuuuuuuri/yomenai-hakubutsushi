@@ -320,7 +320,7 @@
     page('legend', `
       <h2>この図鑑の見かた</h2>
       <div class="mini"><div class="mini-sheet specimen">${specimenHTML(members[0], ch, mark)}</div></div>
-      <dl>${items.map(([k, v], i) => `<dt>${mark(i + 1)}${k}</dt><dd>${v}</dd>`).join('')}</dl>`);
+      <dl>${items.map(([k, v], i) => `<dt>${mark(i + 1)}${k}</dt><dd>${v.replace(/。(?!$)/g, '。<br>')}</dd>`).join('')}</dl>`);
   }
 
   for (const { ch, members } of parts) {
